@@ -25,6 +25,8 @@ export default function App() {
       setUser(session?.user ?? null);
       if (session?.user?.user_metadata?.progress) {
         useStore.setState({ progress: session.user.user_metadata.progress });
+      } else {
+        useStore.getState().resetProgress();
       }
     });
 
@@ -33,6 +35,8 @@ export default function App() {
       setUser(session?.user ?? null);
       if (session?.user?.user_metadata?.progress) {
         useStore.setState({ progress: session.user.user_metadata.progress });
+      } else {
+        useStore.getState().resetProgress();
       }
     });
 

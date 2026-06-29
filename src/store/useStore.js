@@ -47,7 +47,7 @@ function getCurrentDay() {
   return Math.max(1, Math.min(diff + 1, 63));
 }
 
-const initialProgress = loadFromStorage("em_progress", {
+const defaultProgress = {
   xp: 0,
   level: 1,
   streak: 0,
@@ -58,7 +58,9 @@ const initialProgress = loadFromStorage("em_progress", {
   dailyGoals: { vocab: 0, grammar: 0, quiz: 0 },
   dailyGoalsDate: "",
   vocabStats: {},
-});
+};
+
+const initialProgress = loadFromStorage("em_progress", defaultProgress);
 
 const initialTheme = loadFromStorage("em_theme", "light");
 
@@ -70,6 +72,11 @@ export const useStore = create((set, get) => ({
 
   setUser(user) {
     set({ user });
+  },
+
+  resetProgress() {
+    set({ progress: defaultProgress });
+    localStorage.removeItem("em_progress");
   },
 
   toggleTheme() {
