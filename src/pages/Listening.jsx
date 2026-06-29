@@ -1,0 +1,204 @@
+import { useState, useEffect, useRef } from "react";
+import { useStore } from "../store/useStore";
+import { fetchListening } from "../utils/api";
+import { speak } from "../utils/helpers";
+
+export default function Listening() {
+  const { addXP } = useStore();
+  const [activeTopic, setActiveTopic] = useState(null);
+  const [playingId, setPlayingId] = useState(null);
+  const [answers, setAnswers] = useState({});
+  const [score, setScore] = useState(null);
+  
+  const [listeningTopics, setListeningTopics] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [filterMode, setFilterMode] = useState("general");
+
+  const filteredTopics = listeningTopics.filter(t => {
+    if (filterMode === "all") return true;
+    const isAcademic = t.level === "TOEFL" || t.level === "IELTS" || t.type === "Academic";
+    if (filterMode === "academic") return isAcademic;
+    return !isAcademic;
+  });
+
+  useEffect(() => {
+    async function loadData() {
+      try {
+        const data = await fetchListening();
+        setListeningTopics(data);
+      } catch (err) {
+        useStore.getState().setToast("Gagal memuat materi Listening");
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadData();
+  }, []);
+
+  function handlePlay(id, text) {
+    setPlayingId(id);
+    speak(text, 0.9);
+    setTimeout(() => setPlayingId(null), 3000); // Mock reset
+  }
+
+  function handleAnswer(qIdx, val) {
+    setAnswers(prev => ({ ...prev, [qIdx]: val }));
+  }
+
+  function submitAnswers() {
+    let correct = 0;
+    activeTopic.questions.forEach((q, i) => {
+      if (answers[i] === q.answer) correct++;
+    });
+    setScore(correct);
+    if (correct > 0) addXP(correct * 10, "Listening Practice");
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-[calc(100vh-64px)] flex items-center justify-center">
+        <div className="text-gray-500 dark:text-gray-400 font-bold animate-pulse">Memuat materi Listening...</div>
+      </div>
+    );
+  }
+
+  if (activeTopic) {
+    return (
+      <div className="min-h-[calc(100vh-64px)]">
+        <div className="max-w-[800px] mx-auto px-4 sm:px-6 py-8 pb-16">
+          <header className="mb-6 pb-4 border-b border-gray-200 dark:border-slate-700 flex items-center gap-4">
+            <button 
+              onClick={() => { setActiveTopic(null); setAnswers({}); setScore(null); }}
+              className="bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 text-gray-600 dark:text-gray-400 w-10 h-10 rounded-full flex items-center justify-center cursor-pointer transition-colors hover:text-gray-900 dark:text-gray-100 hover:border-gray-300 dark:border-slate-600"
+            >
+              &#8592;
+            </button>
+            <div>
+              <h1 className="text-[1.4rem] font-extrabold text-gray-900 dark:text-gray-100 m-0">{activeTopic.title}</h1>
+              <span className="text-[0.7rem] uppercase tracking-[1.5px] font-bold text-rose-700 dark:text-rose-400">{activeTopic.type}</span>
+            </div>
+          </header>
+
+          <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-[20px] p-6 sm:p-8 mb-8 shadow-sm text-center">
+            <button 
+              onClick={() => handlePlay('full', activeTopic.script || activeTopic.transcript)}
+              className={`w-20 h-20 rounded-full cursor-pointer transition-all border-none shadow-sm flex items-center justify-center mx-auto mb-4 ${
+                playingId === 'full' ? 'bg-rose-100 text-rose-700 dark:text-rose-400 animate-pulse' : 'bg-rose-700 text-white hover:bg-rose-800 hover:-translate-y-1 hover:shadow-md'
+              }`}
+            >
+              <span className="text-3xl ml-1">&#9654;</span>
+            </button>
+            <p className="text-[0.85rem] text-gray-500 dark:text-gray-400 font-bold uppercase tracking-[1.5px] m-0">
+              {playingId === 'full' ? 'Playing Audio...' : 'Play Audio (TTS)'}
+            </p>
+          </div>
+
+          <div className="bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 rounded-[20px] p-6 mb-8 shadow-sm">
+            <h2 className="text-[1rem] font-bold text-gray-900 dark:text-gray-100 mb-4">Transcript</h2>
+            <p className="text-[0.95rem] leading-relaxed text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{activeTopic.script || activeTopic.transcript}</p>
+          </div>
+
+          <h2 className="text-[1.2rem] font-bold text-gray-900 dark:text-gray-100 mb-5">Comprehension Check</h2>
+          <div className="flex flex-col gap-5 mb-8">
+            {activeTopic.questions.map((q, idx) => (
+              <div key={idx} className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl p-5 shadow-sm">
+                <p className="text-[0.95rem] font-bold text-gray-900 dark:text-gray-100 mb-4 m-0">{idx + 1}. {q.q}</p>
+                <div className="flex flex-col gap-2">
+                  {q.options.map(opt => (
+                    <button
+                      key={opt}
+                      onClick={() => score === null && handleAnswer(idx, opt)}
+                      className={`text-left px-4 py-2.5 rounded-xl border text-[0.85rem] transition-all font-medium ${
+                        score !== null
+                          ? opt === q.answer 
+                            ? "bg-green-50 border-green-500 text-green-700" 
+                            : opt === answers[idx] 
+                              ? "bg-red-50 border-red-400 text-red-700" 
+                              : "bg-gray-50 dark:bg-slate-900/50 border-gray-200 dark:border-slate-700 text-gray-400"
+                          : answers[idx] === opt
+                            ? "bg-rose-50 dark:bg-rose-900/20 border-rose-500 text-rose-800"
+                            : "bg-white dark:bg-slate-800 border-gray-300 dark:border-slate-600 text-gray-700 dark:text-gray-300 hover:border-blue-400 hover:bg-gray-50 dark:hover:bg-slate-700"
+                      }`}
+                      disabled={score !== null}
+                    >
+                      {opt}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {score === null ? (
+            <button 
+              onClick={submitAnswers}
+              disabled={Object.keys(answers).length !== activeTopic.questions.length}
+              className="bg-rose-700 border-none text-white px-8 py-3.5 rounded-full cursor-pointer text-[0.95rem] font-bold shadow-sm transition-all hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed block ml-auto"
+            >
+              Submit Jawaban
+            </button>
+          ) : (
+            <div className="bg-green-50 border border-green-200 p-5 rounded-2xl text-center">
+              <h3 className="text-[1.2rem] font-extrabold text-green-700 mb-2 m-0">Skor: {score}/{activeTopic.questions.length}</h3>
+              <p className="text-[0.9rem] text-green-600 m-0">+{score * 10} XP diperoleh.</p>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-[calc(100vh-64px)]">
+      <div className="max-w-[800px] mx-auto px-4 sm:px-6 py-8 pb-16">
+        <header className="mb-8 pb-6 border-b border-gray-200 dark:border-slate-700">
+          <h1 className="text-[1.8rem] font-extrabold text-gray-900 dark:text-gray-100 mb-1.5">Listening Practice</h1>
+          <p className="text-[0.9rem] text-gray-600 dark:text-gray-400 m-0">Latih telinga dengan percakapan dan kuliah akademik (IELTS/TOEFL)</p>
+        </header>
+
+        <div className="flex gap-2 mb-6">
+          {["all", "general", "academic"].map((mode) => (
+            <button
+              key={mode}
+              onClick={() => setFilterMode(mode)}
+              className={`px-4 py-1.5 rounded-full text-[0.8rem] font-bold border transition-colors ${
+                filterMode === mode 
+                  ? "bg-rose-600 border-rose-600 text-white" 
+                  : "bg-transparent border-gray-300 dark:border-slate-600 text-gray-600 dark:text-gray-400 hover:border-rose-500"
+              }`}
+            >
+              {mode.toUpperCase()}
+            </button>
+          ))}
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {filteredTopics.map((t) => (
+            <button
+              key={t.id}
+              onClick={() => setActiveTopic(t)}
+              className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-[16px] p-6 text-left cursor-pointer transition-all hover:-translate-y-1 hover:border-gray-300 dark:border-slate-600 shadow-sm hover:shadow-md flex flex-col group"
+            >
+              <div className="flex justify-between items-start mb-3">
+                <span className={`text-[0.7rem] uppercase tracking-[1.5px] font-bold px-2.5 py-1 rounded-full ${
+                  t.level === 'Beginner' ? 'bg-green-50 text-green-700 border border-green-200' :
+                  t.level === 'Intermediate' || t.level === 'Advanced' ? 'bg-yellow-50 text-yellow-700 border border-yellow-200' :
+                  'bg-red-50 text-red-700 border border-red-200'
+                }`}>
+                  {t.level || t.type}
+                </span>
+                <span className="text-[0.8rem] text-gray-500 dark:text-gray-400 font-mono font-bold">Audio</span>
+              </div>
+              <h3 className="text-[1.1rem] font-bold text-gray-900 dark:text-gray-100 m-0 mb-3 group-hover:text-rose-700 dark:text-rose-400 transition-colors">
+                {t.title}
+              </h3>
+              <p className="text-[0.85rem] text-gray-600 dark:text-gray-400 m-0 line-clamp-2 leading-relaxed flex-1">
+                {String(t.script || t.transcript || "").substring(0, 100)}...
+              </p>
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
