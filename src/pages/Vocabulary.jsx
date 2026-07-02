@@ -123,40 +123,74 @@ export default function Vocabulary() {
             Kata "{search}" tidak ditemukan dalam kamus raksasa.
           </div>
         ) : view === "flashcard" ? (
-          <div className="max-w-[450px] mx-auto perspective-1000 mt-10">
+          <div className="max-w-[450px] mx-auto mt-10" style={{ perspective: "1000px" }}>
             <div className="flex justify-between text-[0.85rem] font-bold text-gray-500 dark:text-gray-400 mb-4 px-2">
               <span>Kartu {idx + 1} dari {words.length} (Halaman {page}/{totalPages})</span>
               <span className="text-rose-500 uppercase tracking-widest text-[0.65rem]">Master Dictionary</span>
             </div>
 
-            <div 
-              className={`relative w-full h-[320px] transition-transform duration-500 transform-style-3d cursor-pointer shadow-sm hover:shadow-md rounded-[24px] ${flipped ? 'rotate-y-180' : ''} ${animating ? 'scale-95 opacity-80' : 'scale-100 opacity-100'}`}
+            <div
               onClick={handleFlip}
+              style={{
+                position: "relative",
+                width: "100%",
+                height: "320px",
+                transformStyle: "preserve-3d",
+                transition: "transform 0.5s ease, opacity 0.3s",
+                transform: flipped ? "rotateY(180deg)" : "rotateY(0deg)",
+                opacity: animating ? 0.8 : 1,
+                cursor: "pointer",
+                borderRadius: "24px",
+              }}
             >
-              <div className="absolute inset-0 backface-hidden bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-[24px] flex flex-col items-center justify-center p-8 text-center">
-                <span className="text-[2.2rem] font-extrabold text-gray-900 dark:text-gray-100 mb-2">{word.word}</span>
+              {/* Front */}
+              <div style={{
+                position: "absolute", inset: 0,
+                backfaceVisibility: "hidden",
+                WebkitBackfaceVisibility: "hidden",
+                borderRadius: "24px",
+                display: "flex", flexDirection: "column",
+                alignItems: "center", justifyContent: "center",
+                padding: "2rem", textAlign: "center",
+                background: "var(--card-front, white)",
+                border: "1px solid #e5e7eb",
+              }}
+              className="dark:bg-slate-800 dark:border-slate-700"
+              >
+                <span className="text-[2.2rem] font-extrabold text-gray-900 dark:text-gray-100 mb-2 capitalize">{word?.word}</span>
                 <div className="absolute bottom-6 text-[0.75rem] font-bold uppercase tracking-[2px] text-gray-400">
                   Tap untuk melihat arti
                 </div>
               </div>
 
-              <div className="absolute inset-0 backface-hidden rotate-y-180 bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800 rounded-[24px] flex flex-col items-center justify-center p-6 text-center overflow-y-auto custom-scrollbar">
-                <span className="text-[1.5rem] font-bold text-gray-900 dark:text-gray-100 mb-4">{word.word}</span>
-                <p className="text-[0.95rem] text-gray-700 dark:text-gray-300 leading-relaxed m-0 mb-3">{word.meaning || word.translation}</p>
-                {word.example && word.example !== '-' && (
+              {/* Back */}
+              <div style={{
+                position: "absolute", inset: 0,
+                backfaceVisibility: "hidden",
+                WebkitBackfaceVisibility: "hidden",
+                transform: "rotateY(180deg)",
+                borderRadius: "24px",
+                display: "flex", flexDirection: "column",
+                alignItems: "center", justifyContent: "center",
+                padding: "1.5rem", textAlign: "center",
+                overflowY: "auto",
+                border: "1px solid #fecdd3",
+              }}
+              className="bg-rose-50 dark:bg-rose-900/20 dark:border-rose-800"
+              >
+                <span className="text-[1.5rem] font-bold text-gray-900 dark:text-gray-100 mb-3 capitalize">{word?.word}</span>
+                <p className="text-[0.95rem] text-gray-700 dark:text-gray-300 leading-relaxed m-0 mb-3">{word?.meaning || word?.translation}</p>
+                {word?.example && word.example !== '-' && (
                   <p className="text-[0.85rem] text-gray-600 dark:text-gray-400 italic mb-4">"{word.example}"</p>
                 )}
-                {translations[word.word] ? (
-                  <div className="bg-yellow-50 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200 border border-yellow-200 dark:border-yellow-800 p-3 rounded-xl w-full text-sm font-medium whitespace-pre-wrap text-left">
-                    {translations[word.word]}
+                {translations[word?.word] ? (
+                  <div className="bg-yellow-50 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200 border border-yellow-200 dark:border-yellow-800 p-3 rounded-xl w-full text-sm font-medium text-left">
+                    {translations[word?.word]}
                   </div>
                 ) : (
-                  <button 
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleTranslate(word.word);
-                    }}
-                    className="mt-2 text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 px-3 py-1.5 rounded-full border border-blue-200 dark:border-blue-800 hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors"
+                  <button
+                    onClick={(e) => { e.stopPropagation(); handleTranslate(word?.word); }}
+                    className="mt-2 text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 px-3 py-1.5 rounded-full border border-blue-200 dark:border-blue-800 hover:bg-blue-100 transition-colors"
                   >
                     Terjemahkan (ID)
                   </button>
