@@ -25,11 +25,6 @@ export default function Navbar() {
 
           {/* Logo */}
           <div className="flex items-center gap-2 shrink-0">
-            <img
-              src="https://upload.wikimedia.org/wikipedia/en/a/ae/President_University_Logo.png"
-              alt="EnglishUp Logo"
-              className="w-9 h-auto object-contain"
-            />
             <span className="text-[1.1rem] font-extrabold text-gray-900 dark:text-gray-100">
               EnglishUp
             </span>
