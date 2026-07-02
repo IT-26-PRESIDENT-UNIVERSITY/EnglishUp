@@ -6,6 +6,7 @@ const links = [
   { to: "/plan", label: "Rencana Belajar" },
   { to: "/vocabulary", label: "Vocabulary" },
   { to: "/grammar", label: "Grammar" },
+  { to: "/listening", label: "Listening" },
   { to: "/speaking", label: "Speaking" },
   { to: "/reading", label: "Reading" },
   { to: "/writing", label: "Writing" },

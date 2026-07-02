@@ -6,10 +6,14 @@ export function speak(text, rate = 0.85) {
   utterance.rate = rate;
   utterance.pitch = 1.0;
   const voices = window.speechSynthesis.getVoices();
-  const voice =
-    voices.find((v) => v.lang.startsWith("en") && v.localService) ||
-    voices.find((v) => v.lang.startsWith("en"));
-  if (voice) utterance.voice = voice;
+  
+  // Prioritaskan suara kualitas tinggi (Premium, Natural, Google, Online) yang disediakan browser secara gratis
+  const bestVoice = 
+    voices.find(v => v.lang.startsWith("en") && (v.name.includes("Natural") || v.name.includes("Premium") || v.name.includes("Google") || v.name.includes("Online"))) ||
+    voices.find(v => v.lang === "en-US" || v.lang === "en-GB") ||
+    voices.find(v => v.lang.startsWith("en"));
+    
+  if (bestVoice) utterance.voice = bestVoice;
   window.speechSynthesis.speak(utterance);
 }
 
