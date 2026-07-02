@@ -65,7 +65,12 @@ const initialProgress = loadFromStorage("em_progress", defaultProgress);
 const initialTheme = loadFromStorage("em_theme", "light");
 
 export const useStore = create((set, get) => ({
-  user: null,
+  user: {
+    id: "dev-admin-123",
+    email: "admin@president.ac.id",
+    role: "admin"
+  },
+  session: true,
   progress: initialProgress,
   theme: initialTheme,
   toast: null,
@@ -232,6 +237,10 @@ export const useStore = create((set, get) => ({
       saveToStorage("em_progress", p);
       return { progress: p };
     });
+  },
+
+  setToast(msg) {
+    set({ toast: msg });
   },
 
   clearToast() {

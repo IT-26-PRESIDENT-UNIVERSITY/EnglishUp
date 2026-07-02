@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useStore } from "../store/useStore";
 import { fetchWriting } from "../utils/api";
+import { evaluateWriting } from '../utils/ai';
 
 export default function Writing() {
   const { addXP } = useStore();
@@ -44,32 +45,39 @@ export default function Writing() {
     setIsAnalyzing(true);
     setFeedback(null);
 
-    setTimeout(() => {
-      setIsAnalyzing(false);
+    try {
+      // 1. Pass the correct state variables to the OpenRouter function
+      const result = await evaluateWriting(activeTopic.prompt, text, 2);
       
-      const score = Math.min(100, Math.floor(70 + (wordCount / activeTopic.minWords) * 15 + Math.random() * 10));
-      const grammarScore = Math.min(100, score + Math.floor(Math.random() * 10) - 5);
-      const vocabScore = Math.min(100, score + Math.floor(Math.random() * 10) - 5);
-      
+      const score = result.score || 0;
       let xpReward = 10;
-      if (score >= 90) xpReward = 30;
-      else if (score >= 80) xpReward = 20;
+      
+      // 2. Adjust XP logic for IELTS 0.0 - 9.0 Band Scale
+      if (score >= 8.0) xpReward = 30;
+      else if (score >= 6.5) xpReward = 20;
       
       addXP(xpReward, `Writing: ${activeTopic.title}`);
       
+      // 3. Map the new nested JSON structure from Owl Alpha
       setFeedback({
-        score,
-        grammarScore,
-        vocabScore,
+        score: result.score,
+        grammarScore: result.grammarScore?.score || 0,
+        vocabScore: result.vocabScore?.score || 0,
+        taskAchievement: result.taskAchievement?.score || 0,
+        coherence: result.coherenceCohesion?.score || 0,
         xpReward,
-        message: score >= 90 ? "Excellent work! Your arguments are clear and grammar is highly accurate." 
-               : score >= 80 ? "Good job! You conveyed the ideas well, though a few sentence structures could be more natural." 
-               : "You're on the right track. Try to use more varied vocabulary and watch out for tense consistency."
+        message: result.message,
+        correctedEssay: result.correctedEssay
       });
+    } catch (err) {
+      console.error(err);
+      useStore.getState().setToast("Gagal menganalisis teks. Coba lagi nanti.");
+    } finally {
+      setIsAnalyzing(false);
       setTimeout(() => {
         window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
       }, 100);
-    }, 3000);
+    }
   }
 
   if (loading) {
@@ -132,16 +140,17 @@ export default function Writing() {
             <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-2xl p-8 text-center animate-pulse">
               <div className="text-[2rem] mb-4">🤖</div>
               <h3 className="text-blue-800 dark:text-blue-300 font-bold text-[1.2rem] mb-2">AI is reading your text...</h3>
-              <p className="text-blue-600 dark:text-blue-400 text-[0.9rem] m-0">Analyzing grammar, vocabulary, and sentence structures.</p>
+              <p className="text-blue-600 dark:text-blue-400 text-[0.9rem] m-0">Analyzing IELTS metrics: Task Achievement, Coherence, Grammar & Vocabulary.</p>
             </div>
           )}
 
           {feedback && (
             <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-2xl p-8 shadow-sm">
               <div className="flex items-center gap-4 mb-8 pb-6 border-b border-gray-100 dark:border-slate-700">
+                {/* 4. Update UI color logic for IELTS scale */}
                 <div className={`w-20 h-20 rounded-full flex items-center justify-center text-[2rem] font-black shadow-inner border-4 ${
-                  feedback.score >= 90 ? 'bg-green-50 border-green-500 text-green-600' : 
-                  feedback.score >= 80 ? 'bg-blue-50 border-blue-500 text-blue-600' : 
+                  feedback.score >= 8.0 ? 'bg-green-50 border-green-500 text-green-600' : 
+                  feedback.score >= 6.5 ? 'bg-blue-50 border-blue-500 text-blue-600' : 
                   'bg-yellow-50 border-yellow-500 text-yellow-600'
                 }`}>
                   {feedback.score}
@@ -154,23 +163,42 @@ export default function Writing() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4 mb-8">
+              {/* 5. Update Grid to show all 4 IELTS Criteria */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
                 <div className="bg-gray-50 dark:bg-slate-900/50 rounded-xl p-4 border border-gray-100 dark:border-slate-700">
-                  <div className="text-[0.75rem] font-bold text-gray-500 uppercase tracking-wider mb-1">Grammar</div>
-                  <div className="text-[1.8rem] font-black text-gray-900 dark:text-gray-100">{feedback.grammarScore}</div>
+                  <div className="text-[0.65rem] font-bold text-gray-500 uppercase tracking-wider mb-1">Task Achiev.</div>
+                  <div className="text-[1.5rem] font-black text-gray-900 dark:text-gray-100">{feedback.taskAchievement}</div>
                 </div>
                 <div className="bg-gray-50 dark:bg-slate-900/50 rounded-xl p-4 border border-gray-100 dark:border-slate-700">
-                  <div className="text-[0.75rem] font-bold text-gray-500 uppercase tracking-wider mb-1">Vocabulary</div>
-                  <div className="text-[1.8rem] font-black text-gray-900 dark:text-gray-100">{feedback.vocabScore}</div>
+                  <div className="text-[0.65rem] font-bold text-gray-500 uppercase tracking-wider mb-1">Coherence</div>
+                  <div className="text-[1.5rem] font-black text-gray-900 dark:text-gray-100">{feedback.coherence}</div>
+                </div>
+                <div className="bg-gray-50 dark:bg-slate-900/50 rounded-xl p-4 border border-gray-100 dark:border-slate-700">
+                  <div className="text-[0.65rem] font-bold text-gray-500 uppercase tracking-wider mb-1">Vocabulary</div>
+                  <div className="text-[1.5rem] font-black text-gray-900 dark:text-gray-100">{feedback.vocabScore}</div>
+                </div>
+                <div className="bg-gray-50 dark:bg-slate-900/50 rounded-xl p-4 border border-gray-100 dark:border-slate-700">
+                  <div className="text-[0.65rem] font-bold text-gray-500 uppercase tracking-wider mb-1">Grammar</div>
+                  <div className="text-[1.5rem] font-black text-gray-900 dark:text-gray-100">{feedback.grammarScore}</div>
                 </div>
               </div>
 
               <div className="bg-blue-50 dark:bg-blue-900/10 border-l-4 border-blue-500 p-5 rounded-r-xl">
                 <h4 className="text-[0.85rem] font-bold text-blue-900 dark:text-blue-300 uppercase tracking-widest mb-2 m-0">General Feedback</h4>
                 <p className="text-[1rem] leading-relaxed text-blue-800 dark:text-blue-200 m-0 font-medium">
-                  "{feedback.message}"
+                  {feedback.message}
                 </p>
               </div>
+
+              {/* 6. Display the Corrected Essay */}
+              {feedback.correctedEssay && (
+                <div className="bg-green-50 dark:bg-green-900/10 border-l-4 border-green-500 p-5 rounded-r-xl mt-4">
+                  <h4 className="text-[0.85rem] font-bold text-green-900 dark:text-green-300 uppercase tracking-widest mb-2 m-0">Corrected Essay</h4>
+                  <p className="text-[0.95rem] leading-relaxed text-green-800 dark:text-green-200 m-0 font-medium whitespace-pre-wrap">
+                    {feedback.correctedEssay}
+                  </p>
+                </div>
+              )}
 
               <button 
                 onClick={() => {
