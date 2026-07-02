@@ -27,6 +27,24 @@ export const fetchVocabulary = async (page = 1, limit = 50, search = '') => {
         v.word.toLowerCase().includes(s) || 
         (v.meaning && v.meaning.toLowerCase().includes(s))
       );
+      
+      // Auto-translate Indonesian search query to English if 0 results
+      if (filtered.length === 0) {
+        try {
+          const transRes = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=id&tl=en&dt=t&q=${encodeURIComponent(search)}`);
+          const transData = await transRes.json();
+          const translatedS = transData[0].map(item => item[0]).join("").toLowerCase().trim();
+          
+          if (translatedS && translatedS !== s) {
+            filtered = vocabCache.filter(v => 
+              v.word.toLowerCase().includes(translatedS) || 
+              (v.meaning && v.meaning.toLowerCase().includes(translatedS))
+            );
+          }
+        } catch (e) {
+          console.error("Translation fallback failed", e);
+        }
+      }
   }
 
   const total = filtered.length;

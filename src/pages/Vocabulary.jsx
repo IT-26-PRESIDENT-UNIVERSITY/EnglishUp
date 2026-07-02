@@ -53,10 +53,11 @@ export default function Vocabulary() {
     setFlipped(!flipped);
   }
 
-  async function handleTranslate(w, meaning) {
+  async function handleTranslate(w, meaning, example) {
     if (translations[w]) return;
     setTranslations(prev => ({ ...prev, [w]: "Menerjemahkan..." }));
-    const result = await translateText(meaning);
+    const textToTranslate = meaning + (example && example !== '-' ? `\n\nContoh: ${example}` : '');
+    const result = await translateText(textToTranslate);
     setTranslations(prev => ({ ...prev, [w]: result }));
   }
 
@@ -143,15 +144,18 @@ export default function Vocabulary() {
               <div className="absolute inset-0 backface-hidden rotate-y-180 bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800 rounded-[24px] flex flex-col items-center justify-center p-6 text-center overflow-y-auto custom-scrollbar">
                 <span className="text-[1.5rem] font-bold text-gray-900 dark:text-gray-100 mb-4">{word.word}</span>
                 <p className="text-[0.95rem] text-gray-700 dark:text-gray-300 leading-relaxed m-0 mb-3">{word.meaning || word.translation}</p>
+                {word.example && word.example !== '-' && (
+                  <p className="text-[0.85rem] text-gray-600 dark:text-gray-400 italic mb-4">"{word.example}"</p>
+                )}
                 {translations[word.word] ? (
-                  <div className="bg-yellow-50 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200 border border-yellow-200 dark:border-yellow-800 p-3 rounded-xl w-full text-sm font-medium">
+                  <div className="bg-yellow-50 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200 border border-yellow-200 dark:border-yellow-800 p-3 rounded-xl w-full text-sm font-medium whitespace-pre-wrap text-left">
                     {translations[word.word]}
                   </div>
                 ) : (
                   <button 
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleTranslate(word.word, word.meaning || word.translation);
+                      handleTranslate(word.word, word.meaning || word.translation, word.example);
                     }}
                     className="mt-2 text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 px-3 py-1.5 rounded-full border border-blue-200 dark:border-blue-800 hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors"
                   >
@@ -198,14 +202,17 @@ export default function Vocabulary() {
                   </button>
                   <div>
                     <div className="font-extrabold text-[1.1rem] text-gray-900 dark:text-gray-100 mb-2 capitalize">{w.word}</div>
-                    <div className="font-medium text-[0.9rem] text-gray-700 dark:text-gray-300 leading-relaxed mb-2">{w.meaning || w.translation}</div>
+                    <div className="font-medium text-[0.9rem] text-gray-700 dark:text-gray-300 leading-relaxed mb-1">{w.meaning || w.translation}</div>
+                    {w.example && w.example !== '-' && (
+                      <div className="text-[0.85rem] text-gray-500 dark:text-gray-400 italic mb-2">"{w.example}"</div>
+                    )}
                     {translations[w.word] ? (
-                      <div className="text-[0.85rem] text-yellow-700 dark:text-yellow-400 font-semibold mt-1">
+                      <div className="text-[0.85rem] text-yellow-700 dark:text-yellow-400 font-semibold mt-1 whitespace-pre-wrap">
                         &#8627; {translations[w.word]}
                       </div>
                     ) : (
                       <button
-                        onClick={() => handleTranslate(w.word, w.meaning || w.translation)}
+                        onClick={() => handleTranslate(w.word, w.meaning || w.translation, w.example)}
                         className="text-[0.75rem] font-bold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer bg-transparent border-none p-0"
                       >
                         Terjemahkan ke Bahasa Indonesia
