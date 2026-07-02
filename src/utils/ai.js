@@ -4,7 +4,7 @@ const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/
 
 
 export async function evaluateWriting(prompt, text, taskType = 2) {
-  if (!GEMINI_API_KEY) throw new Error("Gemini API Key missing");
+  if (!OPENROUTER_API_KEY) throw new Error("OpenRouter API Key missing");
 
   const systemInstruction = `You are a certified, strict IELTS Examiner evaluating an Academic Writing Task ${taskType} essay. 
 The student was given the prompt: "${prompt}".
@@ -36,35 +36,31 @@ JSON structure required:
 }
 All scores must follow standard IELTS band scores (0.0 to 9.0 in increments of 0.5).`;
 
-  const body = {
-    contents: [
-      {
-        role: "user",
-        parts: [{ text: `Here is my essay text:\n\n${text}` }]
-      }
-    ],
-    systemInstruction: {
-      role: "system",
-      parts: [{ text: systemInstruction }]
-    },
-    generationConfig: {
-      temperature: 0.3,
-      responseMimeType: "application/json"
-    }
-  };
-
-  const res = await fetch(`${GEMINI_API_URL}?key=${GEMINI_API_KEY}`, {
+  const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body)
+    headers: {
+      "Authorization": `Bearer ${OPENROUTER_API_KEY}`,
+      "Content-Type": "application/json",
+      "HTTP-Referer": "https://president.ac.id", 
+      "X-Title": "EnglishUp President University"
+    },
+    body: JSON.stringify({
+      model: "nvidia/nemotron-3-super-120b-a12b:free",
+      messages: [
+        { role: "system", content: systemInstruction },
+        { role: "user", content: `Here is my essay text:\n\n${text}` }
+      ],
+      temperature: 0.3, 
+      response_format: { type: "json_object" }
+    })
   });
 
   if (!res.ok) {
-    throw new Error("Failed to evaluate writing with Gemini");
+    throw new Error("Failed to evaluate writing with OpenRouter");
   }
 
   const data = await res.json();
-  const content = data.candidates[0].content.parts[0].text;
+  const content = data.choices[0].message.content;
   return JSON.parse(content);
 }
 
