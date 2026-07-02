@@ -1,10 +1,3 @@
-export const START_DATE = new Date("2026-06-29");
-
-export function daysSinceStart() {
-  const now = new Date();
-  const diff = Math.floor((now - START_DATE) / 86400000);
-  return Math.max(0, diff);
-}
 
 export const METHODS = {
   srs: { label: "Spaced Repetition" },

@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useStore } from "../store/useStore";
 import { pad } from "../utils/helpers";
-import { METHODS, topicLabels, daysSinceStart } from "../utils/constants";
+import { METHODS, topicLabels } from "../utils/constants";
 import { fetchCurriculum, fetchGrammar } from "../utils/api";
 
 export default function Dashboard() {
@@ -57,7 +57,7 @@ export default function Dashboard() {
   const grammarPct = Math.min((dailyGoals.grammar / 1) * 100, 100);
   const quizPct = Math.min((dailyGoals.quiz / 5) * 100, 100);
 
-  const currentDayOffset = daysSinceStart();
+  const currentDayOffset = useStore.getState().getUserDayOffset();
   const DAILY_PLAN = curriculum.dailyPlan;
   const todayPlan = DAILY_PLAN[currentDayOffset] || DAILY_PLAN[DAILY_PLAN.length - 1] || {};
   const todayGrammar = grammarLessons.find((l) => l.id === todayPlan.grammar);

@@ -53,6 +53,7 @@ const defaultProgress = {
   streak: 0,
   wordsLearned: 0,
   lastDate: "",
+  startDate: new Date().toISOString(),
   grammarCompleted: {},
   completedDays: {},
   dailyGoals: { vocab: 0, grammar: 0, quiz: 0 },
@@ -113,7 +114,16 @@ export const useStore = create((set, get) => ({
     return get().progress.level * 100;
   },
 
-  getCurrentDay,
+  getUserDayOffset() {
+    const p = get().progress;
+    const startDateStr = p.startDate || "2026-06-29T00:00:00";
+    const start = new Date(startDateStr);
+    const now = new Date();
+    start.setHours(0, 0, 0, 0);
+    now.setHours(0, 0, 0, 0);
+    const diff = Math.floor((now - start) / 86400000);
+    return Math.max(0, diff);
+  },
 
   getDailyGoals() {
     const p = get().progress;
