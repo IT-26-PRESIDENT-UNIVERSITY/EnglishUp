@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useStore } from "../store/useStore";
 import { fetchSpeaking } from "../utils/api";
 import { speak, calcSimilarity } from "../utils/helpers";
