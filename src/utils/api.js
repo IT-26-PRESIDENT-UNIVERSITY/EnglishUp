@@ -22,29 +22,47 @@ export const fetchVocabulary = async (page = 1, limit = 50, search = '') => {
   
   let filtered = vocabCache;
   if (search) {
-      const s = search.toLowerCase();
-      filtered = vocabCache.filter(v => 
-        v.word.toLowerCase().includes(s) || 
-        (v.meaning && v.meaning.toLowerCase().includes(s))
-      );
-      
+      const getScore = (v, query) => {
+        const w = v.word.toLowerCase();
+        if (w === query) return 100;
+        if (w.startsWith(query)) return 50;
+        
+        // Exact whole word match in meaning
+        const exactWordRegex = new RegExp(`\\b${query}\\b`, 'i');
+        const m = (v.meaning || "").toLowerCase();
+        
+        if (exactWordRegex.test(w)) return 20;
+        if (w.includes(query)) return 10;
+        if (exactWordRegex.test(m)) return 5;
+        if (m.includes(query)) return 1;
+        return 0;
+      };
+
+      let queryToUse = search.toLowerCase();
+      let scored = vocabCache.map(v => ({ v, score: getScore(v, queryToUse) })).filter(item => item.score > 0);
+
       // Auto-translate Indonesian search query to English if 0 results
-      if (filtered.length === 0) {
+      if (scored.length === 0) {
         try {
           const transRes = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=id&tl=en&dt=t&q=${encodeURIComponent(search)}`);
           const transData = await transRes.json();
           const translatedS = transData[0].map(item => item[0]).join("").toLowerCase().trim();
           
-          if (translatedS && translatedS !== s) {
-            filtered = vocabCache.filter(v => 
-              v.word.toLowerCase().includes(translatedS) || 
-              (v.meaning && v.meaning.toLowerCase().includes(translatedS))
-            );
+          if (translatedS && translatedS !== queryToUse) {
+            queryToUse = translatedS;
+            scored = vocabCache.map(v => ({ v, score: getScore(v, queryToUse) })).filter(item => item.score > 0);
           }
         } catch (e) {
           console.error("Translation fallback failed", e);
         }
       }
+
+      scored.sort((a, b) => {
+        if (b.score !== a.score) return b.score - a.score;
+        return a.v.word.localeCompare(b.v.word);
+      });
+
+      filtered = scored.map(item => item.v);
   }
 
   const total = filtered.length;
