@@ -22,25 +22,3 @@
     z-index: 1;
   }
 }
-
-@layer utilities {
-  .skeleton {
-    @apply animate-pulse bg-gray-200 dark:bg-slate-700/50 rounded-lg;
-  }
-  
-  .skeleton-text {
-    @apply skeleton h-4 w-3/4;
-  }
-  
-  .skeleton-title {
-    @apply skeleton h-6 w-1/2;
-  }
-  
-  .skeleton-button {
-    @apply skeleton h-10 w-full rounded-xl;
-  }
-  
-  .skeleton-card {
-    @apply skeleton w-full h-full min-h-[120px] rounded-xl;
-  }
-}

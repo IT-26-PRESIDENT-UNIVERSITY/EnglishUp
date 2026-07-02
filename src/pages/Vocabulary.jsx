@@ -115,32 +115,9 @@ export default function Vocabulary() {
         </div>
 
         {loading ? (
-          view === "flashcard" ? (
-            <div className="max-w-[450px] mx-auto mt-10">
-              <div className="flex justify-between mb-4 px-2">
-                <div className="skeleton h-4 w-32"></div>
-                <div className="skeleton h-4 w-24"></div>
-              </div>
-              <div className="w-full h-[320px] skeleton rounded-[24px]"></div>
-              <div className="flex justify-center mt-8">
-                <div className="skeleton w-12 h-12 rounded-full"></div>
-              </div>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {[...Array(10)].map((_, i) => (
-                <div key={i} className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl p-5 flex gap-4 shadow-sm">
-                  <div className="skeleton w-10 h-10 rounded-full shrink-0"></div>
-                  <div className="w-full">
-                    <div className="skeleton-title mb-3"></div>
-                    <div className="skeleton-text mb-2 w-full"></div>
-                    <div className="skeleton-text mb-2 w-5/6"></div>
-                    <div className="skeleton h-3 w-1/4 mt-4"></div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )
+          <div className="text-center py-20 text-gray-500 dark:text-gray-400 font-bold animate-pulse">
+            Mencari di dalam 100,000+ kata...
+          </div>
         ) : words.length === 0 ? (
           <div className="text-center py-20 text-gray-500 dark:text-gray-400">
             Kata "{search}" tidak ditemukan dalam kamus raksasa.

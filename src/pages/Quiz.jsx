@@ -136,21 +136,8 @@ export default function Quiz() {
 
   if (loading) {
     return (
-      <div className="min-h-[calc(100vh-64px)]">
-        <div className="max-w-[700px] mx-auto px-4 sm:px-6 py-8 pb-16">
-          <header className="mb-8 pb-6 border-b border-gray-200 dark:border-slate-700">
-            <div className="skeleton-title w-1/3 mb-3"></div>
-            <div className="skeleton-text w-2/3"></div>
-          </header>
-          <div className="text-center py-8">
-            <div className="skeleton-title w-1/4 mx-auto mb-6"></div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-[400px] mx-auto">
-              {[...Array(4)].map((_, i) => (
-                <div key={i} className="skeleton h-[64px] rounded-[14px]"></div>
-              ))}
-            </div>
-          </div>
-        </div>
+      <div className="min-h-[calc(100vh-64px)] flex items-center justify-center">
+        <div className="text-gray-500 dark:text-gray-400 font-bold animate-pulse">Memuat Quiz dari database...</div>
       </div>
     );
   }
