@@ -53,11 +53,10 @@ export default function Vocabulary() {
     setFlipped(!flipped);
   }
 
-  async function handleTranslate(w, meaning, example) {
+  async function handleTranslate(w) {
     if (translations[w]) return;
     setTranslations(prev => ({ ...prev, [w]: "Menerjemahkan..." }));
-    const textToTranslate = meaning + (example && example !== '-' ? `\n\nContoh: ${example}` : '');
-    const result = await translateText(textToTranslate);
+    const result = await translateText(w);
     setTranslations(prev => ({ ...prev, [w]: result }));
   }
 
@@ -155,7 +154,7 @@ export default function Vocabulary() {
                   <button 
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleTranslate(word.word, word.meaning || word.translation, word.example);
+                      handleTranslate(word.word);
                     }}
                     className="mt-2 text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 px-3 py-1.5 rounded-full border border-blue-200 dark:border-blue-800 hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors"
                   >
@@ -212,10 +211,10 @@ export default function Vocabulary() {
                       </div>
                     ) : (
                       <button
-                        onClick={() => handleTranslate(w.word, w.meaning || w.translation, w.example)}
+                        onClick={() => handleTranslate(w.word)}
                         className="text-[0.75rem] font-bold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer bg-transparent border-none p-0"
                       >
-                        Terjemahkan ke Bahasa Indonesia
+                        Terjemahkan Kata Ini
                       </button>
                     )}
                   </div>
