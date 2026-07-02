@@ -29,10 +29,11 @@ export default function Speaking() {
     loadData();
   }, []);
 
-  function handleSelectTopic(t) {
-    setTopic(t);
-    const bank = speakingBanks[t];
-    setActivePrompt(bank[Math.floor(Math.random() * bank.length)]);
+  function handleSelectTopic(level) {
+    setTopic(level);
+    const bank = speakingBanks.filter(s => s.level === level);
+    const pool = bank.length > 0 ? bank : speakingBanks;
+    setActivePrompt(pool[Math.floor(Math.random() * pool.length)]);
     setTranscript("");
     setScore(null);
   }
@@ -77,9 +78,9 @@ export default function Speaking() {
           </header>
 
           <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-[20px] p-6 sm:p-8 mb-8 shadow-sm">
-            <h2 className="text-[0.75rem] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-[1.5px] mb-4">Prompt</h2>
-            <p className="text-[1.2rem] font-bold text-gray-900 dark:text-gray-100 leading-relaxed m-0 mb-4">{activePrompt.en}</p>
-            <p className="text-[0.9rem] text-gray-500 dark:text-gray-400 italic m-0">"{activePrompt.id}"</p>
+            <h2 className="text-[0.75rem] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-[1.5px] mb-4">Prompt ({activePrompt.level})</h2>
+            <p className="text-[1.2rem] font-bold text-gray-900 dark:text-gray-100 leading-relaxed m-0 mb-4">{activePrompt.scenario}</p>
+            <p className="text-[0.9rem] text-gray-500 dark:text-gray-400 italic m-0">Target: "{activePrompt.targetText}"</p>
           </div>
 
           <div className="text-center mb-8">
@@ -135,34 +136,34 @@ export default function Speaking() {
 
         <div className="flex flex-col gap-4">
           <button 
-            onClick={() => handleSelectTopic('intro')}
+            onClick={() => handleSelectTopic('Beginner')}
             className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-[16px] p-6 text-left cursor-pointer transition-all hover:-translate-y-1 hover:border-gray-300 dark:border-slate-600 shadow-sm flex items-center justify-between group"
           >
             <div>
-              <h3 className="text-[1.1rem] font-bold text-gray-900 dark:text-gray-100 m-0 mb-1 group-hover:text-rose-700 dark:text-rose-400 transition-colors">Perkenalan Diri</h3>
-              <p className="text-[0.85rem] text-gray-500 dark:text-gray-400 m-0">Pertanyaan umum percakapan sehari-hari</p>
+              <h3 className="text-[1.1rem] font-bold text-gray-900 dark:text-gray-100 m-0 mb-1 group-hover:text-rose-700 dark:text-rose-400 transition-colors">Beginner</h3>
+              <p className="text-[0.85rem] text-gray-500 dark:text-gray-400 m-0">Topik sehari-hari dan perkenalan diri</p>
             </div>
             <span className="text-gray-400 group-hover:text-rose-700 dark:text-rose-400 transition-colors text-[1.2rem]">&#8594;</span>
           </button>
           
           <button 
-            onClick={() => handleSelectTopic('ielts_part2')}
+            onClick={() => handleSelectTopic('Intermediate')}
             className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-[16px] p-6 text-left cursor-pointer transition-all hover:-translate-y-1 hover:border-gray-300 dark:border-slate-600 shadow-sm flex items-center justify-between group"
           >
             <div>
-              <h3 className="text-[1.1rem] font-bold text-gray-900 dark:text-gray-100 m-0 mb-1 group-hover:text-rose-700 dark:text-rose-400 transition-colors">IELTS Cue Card</h3>
-              <p className="text-[0.85rem] text-gray-500 dark:text-gray-400 m-0">Bicara 2 menit tanpa henti tentang topik spesifik</p>
+              <h3 className="text-[1.1rem] font-bold text-gray-900 dark:text-gray-100 m-0 mb-1 group-hover:text-rose-700 dark:text-rose-400 transition-colors">Intermediate</h3>
+              <p className="text-[0.85rem] text-gray-500 dark:text-gray-400 m-0">Diskusi umum dan opini terstruktur</p>
             </div>
             <span className="text-gray-400 group-hover:text-rose-700 dark:text-rose-400 transition-colors text-[1.2rem]">&#8594;</span>
           </button>
 
           <button 
-            onClick={() => handleSelectTopic('toefl_independent')}
+            onClick={() => handleSelectTopic('Advanced')}
             className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-[16px] p-6 text-left cursor-pointer transition-all hover:-translate-y-1 hover:border-gray-300 dark:border-slate-600 shadow-sm flex items-center justify-between group"
           >
             <div>
-              <h3 className="text-[1.1rem] font-bold text-gray-900 dark:text-gray-100 m-0 mb-1 group-hover:text-rose-700 dark:text-rose-400 transition-colors">TOEFL Independent</h3>
-              <p className="text-[0.85rem] text-gray-500 dark:text-gray-400 m-0">Berikan opini dan alasan pendukung dalam 45 detik</p>
+              <h3 className="text-[1.1rem] font-bold text-gray-900 dark:text-gray-100 m-0 mb-1 group-hover:text-rose-700 dark:text-rose-400 transition-colors">Advanced</h3>
+              <p className="text-[0.85rem] text-gray-500 dark:text-gray-400 m-0">Topik akademik (TOEFL/IELTS) dan debat</p>
             </div>
             <span className="text-gray-400 group-hover:text-rose-700 dark:text-rose-400 transition-colors text-[1.2rem]">&#8594;</span>
           </button>
