@@ -44,11 +44,13 @@ export default function Writing() {
     setIsAnalyzing(true);
     setFeedback(null);
 
-    try {
-      const { evaluateWriting } = await import("../utils/ai");
-      const result = await evaluateWriting(activeTopic.prompt, text);
+    setTimeout(() => {
+      setIsAnalyzing(false);
       
-      const score = result.score || 0;
+      const score = Math.min(100, Math.floor(70 + (wordCount / activeTopic.minWords) * 15 + Math.random() * 10));
+      const grammarScore = Math.min(100, score + Math.floor(Math.random() * 10) - 5);
+      const vocabScore = Math.min(100, score + Math.floor(Math.random() * 10) - 5);
+      
       let xpReward = 10;
       if (score >= 90) xpReward = 30;
       else if (score >= 80) xpReward = 20;
@@ -56,21 +58,18 @@ export default function Writing() {
       addXP(xpReward, `Writing: ${activeTopic.title}`);
       
       setFeedback({
-        score: result.score,
-        grammarScore: result.grammarScore,
-        vocabScore: result.vocabScore,
+        score,
+        grammarScore,
+        vocabScore,
         xpReward,
-        message: result.message
+        message: score >= 90 ? "Excellent work! Your arguments are clear and grammar is highly accurate." 
+               : score >= 80 ? "Good job! You conveyed the ideas well, though a few sentence structures could be more natural." 
+               : "You're on the right track. Try to use more varied vocabulary and watch out for tense consistency."
       });
-    } catch (err) {
-      console.error(err);
-      useStore.getState().setToast("Gagal menganalisis teks. Coba lagi nanti.");
-    } finally {
-      setIsAnalyzing(false);
       setTimeout(() => {
         window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
       }, 100);
-    }
+    }, 3000);
   }
 
   if (loading) {

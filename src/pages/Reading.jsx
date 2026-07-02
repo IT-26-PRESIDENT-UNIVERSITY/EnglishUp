@@ -206,48 +206,20 @@ export default function Reading() {
           <p className="text-[0.9rem] text-gray-600 dark:text-gray-400 m-0">Latih pemahaman bacaan dengan teks TOEFL & IELTS Level</p>
         </header>
 
-        <div className="flex justify-between items-center mb-6">
-          <div className="flex gap-2">
-            {["all", "general", "academic"].map((mode) => (
-              <button
-                key={mode}
-                onClick={() => setFilterMode(mode)}
-                className={`px-4 py-1.5 rounded-full text-[0.8rem] font-bold border transition-colors ${
-                  filterMode === mode 
-                    ? "bg-rose-600 border-rose-600 text-white" 
-                    : "bg-transparent border-gray-300 dark:border-slate-600 text-gray-600 dark:text-gray-400 hover:border-rose-500"
-                }`}
-              >
-                {mode.toUpperCase()}
-              </button>
-            ))}
-          </div>
-
-          <button 
-            onClick={async () => {
-              setLoading(true);
-              try {
-                const { generateReadingContent } = await import("../utils/ai");
-                const levelToGenerate = filterMode === 'academic' ? 'TOEFL' : 'Intermediate';
-                const newStory = await generateReadingContent(levelToGenerate);
-                // Assign a mock ID and difficulty
-                newStory.id = Date.now();
-                newStory.difficulty = filterMode === 'academic' ? 'Hard' : 'Medium';
-                
-                // Add to list and open it immediately
-                setReadingPassages(prev => [newStory, ...prev]);
-                startPassage(newStory);
-              } catch (err) {
-                console.error(err);
-                useStore.getState().setToast("Gagal membangkitkan cerita dari AI");
-              } finally {
-                setLoading(false);
-              }
-            }}
-            className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-full text-[0.85rem] font-bold shadow-sm transition-transform hover:-translate-y-0.5 cursor-pointer"
-          >
-            <span className="text-[1.1rem]">✨</span> Generate AI Story
-          </button>
+        <div className="flex gap-2 mb-6">
+          {["all", "general", "academic"].map((mode) => (
+            <button
+              key={mode}
+              onClick={() => setFilterMode(mode)}
+              className={`px-4 py-1.5 rounded-full text-[0.8rem] font-bold border transition-colors ${
+                filterMode === mode 
+                  ? "bg-rose-600 border-rose-600 text-white" 
+                  : "bg-transparent border-gray-300 dark:border-slate-600 text-gray-600 dark:text-gray-400 hover:border-rose-500"
+              }`}
+            >
+              {mode.toUpperCase()}
+            </button>
+          ))}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
