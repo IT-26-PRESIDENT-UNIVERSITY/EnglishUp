@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useStore } from "../store/useStore";
 import { fetchSpeaking } from "../utils/api";
-import { speak } from "../utils/helpers";
+import { speak, calcSimilarity } from "../utils/helpers";
 
 export default function Speaking() {
   const { addXP } = useStore();
@@ -11,6 +11,7 @@ export default function Speaking() {
   const [isRecording, setIsRecording] = useState(false);
   const [transcript, setTranscript] = useState("");
   const [score, setScore] = useState(null);
+  const recognitionRef = useRef(null);
   
   const [speakingBanks, setSpeakingBanks] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -27,6 +28,35 @@ export default function Speaking() {
       }
     }
     loadData();
+
+    // Inisialisasi Web Speech API
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (SpeechRecognition) {
+      const rec = new SpeechRecognition();
+      rec.continuous = true;
+      rec.interimResults = true;
+      rec.lang = 'en-US';
+
+      rec.onresult = (event) => {
+        let currentTranscript = "";
+        for (let i = 0; i < event.results.length; i++) {
+          currentTranscript += event.results[i][0].transcript + " ";
+        }
+        setTranscript(currentTranscript.trim());
+      };
+
+      rec.onerror = (event) => {
+        console.error("Speech recognition error", event.error);
+        if (event.error === 'not-allowed') {
+          useStore.getState().setToast("Akses mikrofon ditolak. Izinkan mikrofon di pengaturan browser.");
+          setIsRecording(false);
+        }
+      };
+
+      recognitionRef.current = rec;
+    } else {
+      useStore.getState().setToast("Browser ini tidak mendukung Speech Recognition.");
+    }
   }, []);
 
   function handleSelectTopic(level) {
@@ -39,17 +69,44 @@ export default function Speaking() {
   }
 
   function toggleRecord() {
+    if (!recognitionRef.current) {
+      useStore.getState().setToast("Speech Recognition tidak didukung di browser ini.");
+      return;
+    }
+
     if (!isRecording) {
       setIsRecording(true);
       setTranscript("");
       setScore(null);
-      setTimeout(() => {
-        setTranscript("I strongly agree that technology has made our lives complicated. We are constantly distracted...");
-      }, 2000);
+      recognitionRef.current.start();
     } else {
       setIsRecording(false);
-      setScore(85);
-      addXP(15, "Speaking Practice");
+      recognitionRef.current.stop();
+      
+      setTimeout(() => {
+        setScore((prevScore) => {
+          if (prevScore !== null) return prevScore; // Avoid double scoring
+          // Gunakan state terbaru (transcript bisa jadi terlambat ter-update jika mengambil dari onresult terakhir)
+          setTranscript((finalTranscript) => {
+            const finalScore = calcSimilarity(activePrompt.targetText, finalTranscript);
+            addXP(15, "Speaking Practice");
+            return finalTranscript;
+          });
+          // Note: state updates in setTranscript updater won't directly set score. We need a better approach.
+        });
+      }, 500);
+      
+      // Let's use standard state since stop is async
+      setTimeout(() => {
+         const currentText = document.getElementById("transcript-text")?.innerText || "";
+         if (currentText) {
+             const finalScore = calcSimilarity(activePrompt.targetText, currentText);
+             setScore(finalScore);
+             if (finalScore > 0) addXP(15, "Speaking Practice");
+         } else {
+             setScore(0);
+         }
+      }, 500);
     }
   }
 
@@ -103,8 +160,8 @@ export default function Speaking() {
                 Transcript
                 {isRecording && <span className="flex items-center gap-1.5 text-red-500 text-[0.7rem]"><span className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>Live</span>}
               </h3>
-              <p className="text-[0.95rem] text-gray-700 dark:text-gray-300 leading-relaxed italic m-0">
-                {transcript || "Mendengarkan..."}
+              <p id="transcript-text" className="text-[0.95rem] text-gray-700 dark:text-gray-300 leading-relaxed italic m-0 min-h-[2rem]">
+                {transcript || (isRecording ? "Mendengarkan... (Silakan bicara)" : "")}
               </p>
             </div>
           )}
@@ -112,7 +169,9 @@ export default function Speaking() {
           {score !== null && (
             <div className="bg-green-50 border border-green-200 rounded-2xl p-6 text-center shadow-sm">
               <h3 className="text-[1.25rem] font-extrabold text-green-700 mb-2 m-0">Pronunciation Score: {score}/100</h3>
-              <p className="text-[0.9rem] text-green-600 m-0 mb-4">Luar biasa! Pelafalanmu sangat jelas.</p>
+              <p className="text-[0.9rem] text-green-600 m-0 mb-4">
+                {score >= 80 ? "Luar biasa! Pelafalanmu sangat jelas." : score >= 50 ? "Lumayan bagus, tapi masih bisa ditingkatkan." : "Perlu lebih banyak latihan pelafalan."}
+              </p>
               <button 
                 onClick={() => { setTranscript(""); setScore(null); }}
                 className="bg-green-600 text-white px-6 py-2.5 rounded-full cursor-pointer border-none font-bold text-[0.85rem] transition-colors hover:bg-green-700"
