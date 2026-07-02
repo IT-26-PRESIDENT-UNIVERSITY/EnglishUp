@@ -1,7 +1,7 @@
 import { supabase } from './supabaseClient';
 
 export const fetchCurriculum = async () => {
-  const { data } = await supabase.from('curriculum').select('*');
+  const { data } = await supabase.from('curriculum').select('*').single();
   return data;
 };
 
