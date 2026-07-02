@@ -19,9 +19,9 @@ export default function Navbar() {
   return (
     <nav className="sticky top-0 z-50 h-auto sm:h-16 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-b border-gray-200 dark:border-slate-800 flex flex-wrap sm:flex-nowrap items-center px-4 sm:px-6 py-3 sm:py-0 gap-3 sm:gap-8 shadow-sm transition-colors duration-200">
       <div className="flex flex-row items-center shrink-0 leading-tight gap-2">
-        <img 
-          src="https://upload.wikimedia.org/wikipedia/en/a/ae/President_University_Logo.png" 
-          alt="EnglishUp Logo" 
+        <img
+          src="https://upload.wikimedia.org/wikipedia/en/a/ae/President_University_Logo.png"
+          alt="EnglishUp Logo"
           className="w-10 h-auto object-contain"
         />
         <span className="text-[1.1rem] font-extrabold text-gray-900 dark:text-gray-100">
@@ -68,27 +68,6 @@ export default function Navbar() {
           </span>
           <span className="text-[0.7rem] text-gray-500 dark:text-gray-400">streak</span>
         </div>
-
-        {useStore.getState().user && (
-          <div className="hidden sm:flex flex-col items-end mr-2 ml-2">
-            <span className="text-[0.8rem] font-bold text-gray-900 dark:text-gray-100 leading-none">
-              {useStore.getState().user?.user_metadata?.full_name || 'Student'}
-            </span>
-            <span className="text-[0.65rem] text-gray-500 dark:text-gray-400">
-              {useStore.getState().user?.user_metadata?.major || 'General'}
-            </span>
-          </div>
-        )}
-
-        <button
-          onClick={async () => {
-            const { supabase } = await import('../utils/supabase');
-            await supabase.auth.signOut();
-          }}
-          className="text-[0.75rem] font-bold text-rose-700 dark:text-rose-400 hover:underline cursor-pointer border-none bg-transparent p-0"
-        >
-          Logout
-        </button>
       </div>
     </nav>
   );
