@@ -121,7 +121,7 @@ export default function Dashboard() {
         <section className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
           {[
             { value: progress.wordsLearned, label: "Kata Dikuasai" },
-            { value: Object.keys(progress.grammarCompleted).length, label: "Grammar Tamat" },
+            { value: Object.keys(progress.grammarCompleted || {}).length, label: "Grammar Tamat" },
             { value: progress.streak, label: "Hari Berturut" },
             { value: progress.xp, label: "Total XP" },
           ].map((s) => (

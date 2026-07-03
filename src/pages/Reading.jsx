@@ -162,7 +162,7 @@ export default function Reading() {
           <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-[20px] p-6 sm:p-8 mb-8 shadow-sm">
             <h2 className="text-[0.75rem] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-[1.5px] mb-4">Teks Bacaan</h2>
             <p className="text-[1rem] leading-[1.8] text-gray-800 dark:text-gray-200 m-0 whitespace-pre-wrap">
-              {cleanAIPrompt(activePassage.text || activePassage.content)}
+              {cleanAIPrompt(activePassage.text || activePassage.content, false, activePassage.title)}
             </p>
           </div>
 
@@ -255,7 +255,7 @@ export default function Reading() {
                 {p.title}
               </h3>
               <p className="text-[0.85rem] text-gray-600 dark:text-gray-400 m-0 line-clamp-2 leading-relaxed flex-1">
-                {cleanAIPrompt(p.text || p.content)}
+                {cleanAIPrompt(p.text || p.content, false, p.title)}
               </p>
               <div className="mt-4 text-[0.85rem] font-bold text-rose-700 dark:text-rose-400 flex items-center gap-2">
                 Mulai Baca &rarr;

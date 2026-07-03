@@ -45,9 +45,9 @@ export default function Listening() {
     loadData();
   }, []);
 
-  function handlePlay(id, text) {
+  function handlePlay(id, text, title = "") {
     setPlayingId(id);
-    speak(cleanAIPrompt(text, true), 0.9);
+    speak(cleanAIPrompt(text, true, title), 0.9);
     setTimeout(() => setPlayingId(null), 3000); // Mock reset
   }
 
@@ -91,7 +91,7 @@ export default function Listening() {
 
           <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-[20px] p-6 sm:p-8 mb-8 shadow-sm text-center">
             <button 
-              onClick={() => handlePlay('full', activeTopic.script || activeTopic.transcript)}
+              onClick={() => handlePlay('full', activeTopic.script || activeTopic.transcript, activeTopic.title)}
               className={`w-20 h-20 rounded-full cursor-pointer transition-all border-none shadow-sm flex items-center justify-center mx-auto mb-4 ${
                 playingId === 'full' ? 'bg-rose-100 text-rose-700 dark:text-rose-400 animate-pulse' : 'bg-rose-700 text-white hover:bg-rose-800 hover:-translate-y-1 hover:shadow-md'
               }`}
@@ -105,7 +105,7 @@ export default function Listening() {
 
           <div className="bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 rounded-[20px] p-6 mb-8 shadow-sm">
             <h2 className="text-[1rem] font-bold text-gray-900 dark:text-gray-100 mb-4">Transcript</h2>
-            <p className="text-[0.95rem] leading-relaxed text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{cleanAIPrompt(activeTopic.script || activeTopic.transcript, true)}</p>
+            <p className="text-[0.95rem] leading-relaxed text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{cleanAIPrompt(activeTopic.script || activeTopic.transcript, true, activeTopic.title)}</p>
           </div>
 
           <h2 className="text-[1.2rem] font-bold text-gray-900 dark:text-gray-100 mb-5">Comprehension Check</h2>
@@ -203,7 +203,7 @@ export default function Listening() {
                 {t.title}
               </h3>
               <p className="text-[0.85rem] text-gray-600 dark:text-gray-400 m-0 line-clamp-2 leading-relaxed flex-1">
-                {cleanAIPrompt(String(t.script || t.transcript || ""), true).substring(0, 100)}...
+                {cleanAIPrompt(String(t.script || t.transcript || ""), true, t.title).substring(0, 100)}...
               </p>
             </button>
           ))}
