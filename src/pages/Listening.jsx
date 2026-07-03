@@ -47,7 +47,7 @@ export default function Listening() {
 
   function handlePlay(id, text) {
     setPlayingId(id);
-    speak(cleanAIPrompt(text), 0.9);
+    speak(cleanAIPrompt(text, true), 0.9);
     setTimeout(() => setPlayingId(null), 3000); // Mock reset
   }
 
@@ -105,7 +105,7 @@ export default function Listening() {
 
           <div className="bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 rounded-[20px] p-6 mb-8 shadow-sm">
             <h2 className="text-[1rem] font-bold text-gray-900 dark:text-gray-100 mb-4">Transcript</h2>
-            <p className="text-[0.95rem] leading-relaxed text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{cleanAIPrompt(activeTopic.script || activeTopic.transcript)}</p>
+            <p className="text-[0.95rem] leading-relaxed text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{cleanAIPrompt(activeTopic.script || activeTopic.transcript, true)}</p>
           </div>
 
           <h2 className="text-[1.2rem] font-bold text-gray-900 dark:text-gray-100 mb-5">Comprehension Check</h2>
@@ -203,7 +203,7 @@ export default function Listening() {
                 {t.title}
               </h3>
               <p className="text-[0.85rem] text-gray-600 dark:text-gray-400 m-0 line-clamp-2 leading-relaxed flex-1">
-                {cleanAIPrompt(String(t.script || t.transcript || "")).substring(0, 100)}...
+                {cleanAIPrompt(String(t.script || t.transcript || ""), true).substring(0, 100)}...
               </p>
             </button>
           ))}

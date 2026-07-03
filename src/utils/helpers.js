@@ -48,9 +48,9 @@ export async function translateText(text) {
   }
 }
 
-export function cleanAIPrompt(text) {
+export function cleanAIPrompt(text, isListening = false) {
   if (!text) return "";
-  return text
+  const cleaned = text
     .replace(/\(Imagine.*?\)/gi, '')
     .replace(/Prompt:.*?(?=\n|$)/gi, '')
     .replace(/Here is.*?(?=\n|$)/gi, '')
@@ -59,4 +59,13 @@ export function cleanAIPrompt(text) {
     .replace(/This is a comprehensive passage.*?(?=\n|$)/gi, '')
     .replace(/\[Speaker A\].*?Intermediate level is unprecedented\.\.\./gi, '')
     .trim();
+    
+  if (cleaned.length < 20) {
+    if (isListening) {
+      return "[Speaker A]: Welcome to today's discussion.\n[Speaker B]: Thank you. The topic we are covering is very important for our future.\n[Speaker A]: I agree. Small steps can make a big difference in improving our world.";
+    } else {
+      return "The environment and society are closely linked. Over the past few decades, human activities have significantly impacted the natural world. Deforestation, pollution, and climate change are some of the most pressing issues we face today. To ensure a sustainable future, it is vital that communities and governments work together to adopt eco-friendly practices, protect wildlife, and reduce our carbon footprint.";
+    }
+  }
+  return cleaned;
 }

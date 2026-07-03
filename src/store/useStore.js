@@ -151,11 +151,14 @@ export const useStore = create((set, get) => ({
       if (p.lastDate !== today) {
         if (p.lastDate) {
           const last = new Date(p.lastDate);
+          last.setHours(0, 0, 0, 0);
           const now = new Date();
-          const dayDiff = Math.round((now - last) / 86400000);
+          now.setHours(0, 0, 0, 0);
+          const dayDiff = Math.floor((now - last) / 86400000);
+          
           if (dayDiff > 1) {
-            p.streak = 0;
-          } else {
+            p.streak = 1; // start a new streak today
+          } else if (dayDiff === 1) {
             p.streak = p.streak + 1;
           }
         } else {
