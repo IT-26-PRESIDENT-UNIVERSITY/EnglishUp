@@ -171,11 +171,7 @@ export default function Grammar() {
             >
               Cek Jawaban
             </button>
-          ) : isCompleted ? (
-            <div className="bg-gray-100 dark:bg-slate-800 border border-gray-300 dark:border-slate-600 p-5 rounded-2xl text-center text-gray-500 dark:text-gray-400 font-bold">
-              Materi Sudah Diselesaikan
-            </div>
-          ) : (
+          ) : showResult ? (
             <div className={`p-5 rounded-2xl border ${isPerfect ? 'bg-green-50 border-green-200' : 'bg-yellow-50 border-yellow-200'} text-center`}>
               <h3 className={`text-[1.2rem] font-extrabold mb-2 m-0 ${isPerfect ? 'text-green-700' : 'text-yellow-700'}`}>
                 {isPerfect ? "Sempurna! +20 XP" : "Masih ada yang salah, coba lagi!"}
@@ -183,14 +179,25 @@ export default function Grammar() {
               <p className={`text-[0.9rem] mb-5 m-0 ${isPerfect ? 'text-green-600' : 'text-yellow-600'}`}>
                 {isPerfect ? "Kamu telah menguasai materi ini." : "Perhatikan jawaban yang benar di atas."}
               </p>
-              <button 
-                onClick={() => { setShowResult(false); setAnswers({}); }}
-                className={`px-6 py-2.5 rounded-full font-bold text-[0.85rem] cursor-pointer transition-colors border-none ${
-                  isPerfect ? 'bg-green-600 text-white hover:bg-green-700' : 'bg-yellow-500 text-white hover:bg-yellow-600'
-                }`}
-              >
-                {isPerfect ? "Ulangi Latihan" : "Coba Lagi"}
-              </button>
+              {isPerfect ? (
+                <button 
+                  onClick={() => setActiveLesson(null)}
+                  className="px-6 py-2.5 rounded-full font-bold text-[0.85rem] cursor-pointer transition-colors border-none bg-green-600 text-white hover:bg-green-700"
+                >
+                  &#10004; Accomplished (Kembali)
+                </button>
+              ) : (
+                <button 
+                  onClick={() => { setShowResult(false); setAnswers({}); }}
+                  className="px-6 py-2.5 rounded-full font-bold text-[0.85rem] cursor-pointer transition-colors border-none bg-yellow-500 text-white hover:bg-yellow-600"
+                >
+                  Coba Lagi
+                </button>
+              )}
+            </div>
+          ) : (
+            <div className="bg-gray-100 dark:bg-slate-800 border border-gray-300 dark:border-slate-600 p-5 rounded-2xl text-center text-gray-500 dark:text-gray-400 font-bold">
+              Materi Sudah Diselesaikan (Accomplished)
             </div>
           )}
         </div>
