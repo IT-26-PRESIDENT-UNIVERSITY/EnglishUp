@@ -247,6 +247,20 @@ export default function Dashboard() {
         </section>
 
       </div>
+      
+      <div className="text-center pb-8">
+        <button 
+          onClick={() => {
+            if (window.confirm("Yakin ingin mereset semua progres belajarmu ke awal? XP, level, dan coretan hari akan hilang selamanya!")) {
+              useStore.getState().resetProgress();
+              window.location.reload();
+            }
+          }}
+          className="text-xs font-bold text-gray-400 hover:text-red-500 cursor-pointer bg-transparent border-none transition-colors"
+        >
+          &times; Reset Seluruh Progres
+        </button>
+      </div>
     </div>
   );
 }
