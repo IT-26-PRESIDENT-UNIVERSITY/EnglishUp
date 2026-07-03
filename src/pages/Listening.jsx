@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useStore } from "../store/useStore";
 import { fetchListening } from "../utils/api";
 import { speak, cleanAIPrompt } from "../utils/helpers";
+import { generateDynamicText } from "../utils/ai";
 
 export default function Listening() {
   const { addXP, completeListening, progress } = useStore();
@@ -12,6 +13,7 @@ export default function Listening() {
   
   const [listeningTopics, setListeningTopics] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isGenerating, setIsGenerating] = useState(false);
   const [filterMode, setFilterMode] = useState("general");
   
   const [page, setPage] = useState(1);
@@ -44,6 +46,31 @@ export default function Listening() {
     }
     loadData();
   }, []);
+
+  async function startListening(t) {
+    setIsGenerating(true);
+    let transcriptContent = t.script || t.transcript || "";
+    
+    if (!transcriptContent || transcriptContent.includes("(Imagine 500 words") || transcriptContent.length < 50) {
+      try {
+        const generated = await generateDynamicText('listening', t.title, t.questions);
+        if (generated) {
+          transcriptContent = generated;
+          t.script = generated; // cache locally
+        }
+      } catch (err) {
+        useStore.getState().setToast("Gagal men-generate dialog unik (menggunakan teks fallback).");
+        transcriptContent = cleanAIPrompt(transcriptContent, true, t.title);
+      }
+    }
+
+    setIsGenerating(false);
+    setActiveTopic({ ...t, script: transcriptContent });
+    setAnswers({});
+    setScore(null);
+    setPhase("listening");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
 
   function handlePlay(id, text, title = "") {
     setPlayingId(id);
@@ -81,7 +108,7 @@ export default function Listening() {
         <div className="max-w-[800px] mx-auto px-4 sm:px-6 py-8 pb-16">
           <header className="mb-6 pb-4 border-b border-gray-200 dark:border-slate-700 flex items-center gap-4">
             <button 
-              onClick={() => { setActiveTopic(null); setAnswers({}); setScore(null); }}
+              onClick={() => { setActiveTopic(null); setAnswers({}); setScore(null); setPhase("list"); }}
               className="bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 text-gray-600 dark:text-gray-400 w-10 h-10 rounded-full flex items-center justify-center cursor-pointer transition-colors hover:text-gray-900 dark:text-gray-100 hover:border-gray-300 dark:border-slate-600"
             >
               &#8592;
@@ -145,7 +172,7 @@ export default function Listening() {
           {score === null ? (
             <button 
               onClick={submitAnswers}
-              disabled={Object.keys(answers).length !== activeTopic.questions.length}
+              disabled={Object.keys(answers).length !== activeTopic.questions.length || isGenerating}
               className="bg-rose-700 border-none text-white px-8 py-3.5 rounded-full cursor-pointer text-[0.95rem] font-bold shadow-sm transition-all hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed block ml-auto"
             >
               Submit Jawaban
@@ -189,9 +216,18 @@ export default function Listening() {
           {paginatedTopics.map((t) => (
             <button
               key={t.id}
-              onClick={() => setActiveTopic(t)}
-              className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-[16px] p-6 text-left cursor-pointer transition-all hover:-translate-y-1 hover:border-gray-300 dark:border-slate-600 shadow-sm hover:shadow-md flex flex-col group"
+              onClick={() => startListening(t)}
+              disabled={isGenerating}
+              className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-[16px] p-6 text-left cursor-pointer transition-all hover:-translate-y-1 hover:border-gray-300 dark:border-slate-600 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex flex-col group relative"
             >
+              {isGenerating && (
+                <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/70 dark:bg-slate-800/70 rounded-[16px] backdrop-blur-sm">
+                  <div className="text-rose-700 dark:text-rose-400 font-bold text-sm animate-pulse flex items-center gap-2">
+                    <svg className="w-5 h-5 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                    Merakit Audio Script...
+                  </div>
+                </div>
+              )}
               <div className="flex justify-between items-start mb-3">
                 <div className="flex items-center gap-2">
                   <span className={`text-[0.7rem] uppercase tracking-[1.5px] font-bold px-2.5 py-1 rounded-full ${

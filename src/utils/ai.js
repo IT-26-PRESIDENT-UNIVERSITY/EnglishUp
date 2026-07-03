@@ -64,30 +64,22 @@ All scores must follow standard IELTS band scores (0.0 to 9.0 in increments of 0
   return JSON.parse(content);
 }
 
-export async function generateReadingContent(levelTitle) {
+export async function generateDynamicText(type, title, questions) {
   if (!GEMINI_API_KEY) throw new Error("Gemini API Key missing");
 
-  const systemInstruction = `You are an English test creator. Create a reading comprehension exercise suitable for a student at level: "${levelTitle}".
-Respond in STRICT JSON format exactly matching this schema:
-{
-  "title": "<string: catchy title of the story>",
-  "text": "<string: 3-4 paragraphs of reading material>",
-  "questions": [
-    {
-      "id": 1,
-      "q": "<string: multiple choice question>",
-      "options": ["<option A>", "<option B>", "<option C>", "<option D>"],
-      "answer": "<exact string from options that is correct>"
-    }
-  ]
-}
-Ensure there are exactly 3 questions. Do not include markdown blocks outside the JSON.`;
+  const isReading = type === 'reading';
+  const systemInstruction = `You are an expert English teacher. Create a ${isReading ? 'reading comprehension passage' : 'listening transcript / dialogue'} for the topic: "${title}".
+REQUIREMENTS:
+1. ${isReading ? 'The passage MUST be at least 7 paragraphs long.' : 'The transcript MUST be a detailed conversation between 2 or more people, or a long lecture.'}
+2. It MUST contain the explicit information needed to correctly answer these questions: ${JSON.stringify(questions.map(q => ({ q: q.q, answer: q.answer })))}
+3. The content must be unique, engaging, and not repetitive.
+4. Respond in STRICT JSON format: { "text": "<string: the generated text>" }`;
 
   const body = {
     contents: [
       {
         role: "user",
-        parts: [{ text: "Generate a reading exercise." }]
+        parts: [{ text: "Generate the text now." }]
       }
     ],
     systemInstruction: {
@@ -95,7 +87,7 @@ Ensure there are exactly 3 questions. Do not include markdown blocks outside the
       parts: [{ text: systemInstruction }]
     },
     generationConfig: {
-      temperature: 0.7,
+      temperature: 0.8,
       responseMimeType: "application/json"
     }
   };
@@ -107,10 +99,10 @@ Ensure there are exactly 3 questions. Do not include markdown blocks outside the
   });
 
   if (!res.ok) {
-    throw new Error("Failed to generate reading content");
+    throw new Error("Failed to generate dynamic content");
   }
 
   const data = await res.json();
   const content = data.candidates[0].content.parts[0].text;
-  return JSON.parse(content);
+  return JSON.parse(content).text;
 }

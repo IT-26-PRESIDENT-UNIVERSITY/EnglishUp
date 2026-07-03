@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useStore } from "../store/useStore";
 import { fetchReading } from "../utils/api";
 import { cleanAIPrompt } from "../utils/helpers";
+import { generateDynamicText } from "../utils/ai";
 
 export default function Reading() {
   const { addXP, completeReading, progress } = useStore();
@@ -12,6 +13,7 @@ export default function Reading() {
   
   const [readingPassages, setReadingPassages] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isGenerating, setIsGenerating] = useState(false);
   const [filterMode, setFilterMode] = useState("general");
   
   const [page, setPage] = useState(1);
@@ -46,8 +48,26 @@ export default function Reading() {
     loadData();
   }, []);
 
-  function startPassage(p) {
-    setActivePassage(p);
+  async function startPassage(p) {
+    setIsGenerating(true);
+    let passageContent = p.text || p.content || "";
+    
+    // If text looks like a dummy placeholder, generate it!
+    if (!passageContent || passageContent.includes("(Imagine 500 words") || passageContent.length < 50) {
+      try {
+        const generated = await generateDynamicText('reading', p.title, p.questions);
+        if (generated) {
+          passageContent = generated;
+          p.content = generated; // cache locally
+        }
+      } catch (err) {
+        useStore.getState().setToast("Gagal men-generate teks unik (menggunakan teks fallback).");
+        passageContent = cleanAIPrompt(passageContent, false, p.title);
+      }
+    }
+
+    setIsGenerating(false);
+    setActivePassage({ ...p, content: passageContent });
     setAnswers({});
     setScore(0);
     setPhase("reading");
@@ -200,7 +220,7 @@ export default function Reading() {
           <div className="flex justify-end">
             <button 
               onClick={submitReading}
-              disabled={!allAnswered}
+              disabled={!allAnswered || isGenerating}
               className="bg-rose-700 border-none text-white px-8 py-3.5 rounded-full cursor-pointer text-[0.95rem] font-bold shadow-sm transition-all hover:opacity-90 hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none disabled:transform-none"
             >
               Submit Jawaban
@@ -240,8 +260,17 @@ export default function Reading() {
             <button
               key={p.id}
               onClick={() => startPassage(p)}
-              className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-[16px] p-6 text-left cursor-pointer transition-all hover:-translate-y-1 hover:border-gray-300 dark:border-slate-600 shadow-sm hover:shadow-md group flex flex-col"
+              disabled={isGenerating}
+              className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-[16px] p-6 text-left cursor-pointer transition-all hover:-translate-y-1 hover:border-gray-300 dark:border-slate-600 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed group flex flex-col relative"
             >
+              {isGenerating && (
+                <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/70 dark:bg-slate-800/70 rounded-[16px] backdrop-blur-sm">
+                  <div className="text-rose-700 dark:text-rose-400 font-bold text-sm animate-pulse flex items-center gap-2">
+                    <svg className="w-5 h-5 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                    Merakit Teks (7+ Paragraf)...
+                  </div>
+                </div>
+              )}
               <div className="flex justify-between items-start mb-3">
                 <div className="flex items-center gap-2">
                   <span className={`text-[0.7rem] uppercase tracking-[1.5px] font-bold px-2.5 py-1 rounded-full ${
