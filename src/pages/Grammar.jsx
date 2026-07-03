@@ -71,6 +71,7 @@ export default function Grammar() {
   }
 
   if (activeLesson) {
+    const isCompleted = progress.grammarCompleted?.[activeLesson.id];
     const isPerfect = showResult && Object.keys(answers).filter(i => answers[i] === activeLesson.practice[i].answer).length === activeLesson.practice.length;
 
     return (
@@ -84,7 +85,14 @@ export default function Grammar() {
               &#8592;
             </button>
             <div>
-              <h1 className="text-[1.4rem] font-extrabold text-gray-900 dark:text-gray-100 m-0">{activeLesson.title}</h1>
+              <h1 className="text-[1.4rem] font-extrabold text-gray-900 dark:text-gray-100 m-0 flex items-center gap-2">
+                {activeLesson.title}
+                {isCompleted && (
+                  <span className="text-[0.7rem] uppercase tracking-[1.5px] font-bold text-green-700 bg-green-100 px-2 py-0.5 rounded-full border border-green-200">
+                    Mode Review
+                  </span>
+                )}
+              </h1>
               <p className="text-[0.8rem] text-gray-500 dark:text-gray-400 m-0">{activeLesson.subtitle}</p>
             </div>
           </header>
@@ -122,10 +130,10 @@ export default function Grammar() {
                   <div className="flex flex-col gap-2.5">
                     {p.options.map((opt) => {
                       let btnCls = "text-left px-4 py-3 rounded-xl border text-[0.9rem] transition-all font-medium cursor-pointer";
-                      if (showResult) {
+                      if (showResult || isCompleted) {
                         if (opt === p.answer) {
                           btnCls += " bg-green-50 border-green-500 text-green-700";
-                        } else if (opt === chosen) {
+                        } else if (opt === chosen && !isCompleted) {
                           btnCls += " bg-red-50 border-red-400 text-red-700";
                         } else {
                           btnCls += " bg-gray-50 dark:bg-slate-900/50 border-gray-200 dark:border-slate-700 text-gray-400 cursor-not-allowed";
@@ -141,8 +149,8 @@ export default function Grammar() {
                       return (
                         <button
                           key={opt}
-                          onClick={() => !showResult && handleAnswer(i, opt)}
-                          disabled={showResult}
+                          onClick={() => !showResult && !isCompleted && handleAnswer(i, opt)}
+                          disabled={showResult || isCompleted}
                           className={btnCls}
                         >
                           {opt}
@@ -155,7 +163,7 @@ export default function Grammar() {
             })}
           </div>
 
-          {!showResult ? (
+          {!showResult && !isCompleted ? (
             <button 
               onClick={submitAnswers}
               disabled={Object.keys(answers).length !== activeLesson.practice.length}
@@ -163,6 +171,10 @@ export default function Grammar() {
             >
               Cek Jawaban
             </button>
+          ) : isCompleted ? (
+            <div className="bg-gray-100 dark:bg-slate-800 border border-gray-300 dark:border-slate-600 p-5 rounded-2xl text-center text-gray-500 dark:text-gray-400 font-bold">
+              Materi Sudah Diselesaikan
+            </div>
           ) : (
             <div className={`p-5 rounded-2xl border ${isPerfect ? 'bg-green-50 border-green-200' : 'bg-yellow-50 border-yellow-200'} text-center`}>
               <h3 className={`text-[1.2rem] font-extrabold mb-2 m-0 ${isPerfect ? 'text-green-700' : 'text-yellow-700'}`}>
@@ -200,11 +212,10 @@ export default function Grammar() {
             return (
               <button
                 key={l.id}
-                onClick={() => !isCompleted && handleSelectLesson(l)}
-                disabled={isCompleted}
+                onClick={() => handleSelectLesson(l)}
                 className={`border border-gray-200 dark:border-slate-700 rounded-[16px] p-5 text-left transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${
                   isCompleted
-                    ? "bg-green-50/50 dark:bg-green-900/10 cursor-default"
+                    ? "bg-green-50/50 dark:bg-green-900/10"
                     : "bg-white dark:bg-slate-800 cursor-pointer hover:-translate-y-1 hover:border-gray-300 dark:border-slate-600 shadow-sm group"
                 }`}
               >
