@@ -4,7 +4,7 @@ import { fetchListening } from "../utils/api";
 import { speak, cleanAIPrompt } from "../utils/helpers";
 
 export default function Listening() {
-  const { addXP } = useStore();
+  const { addXP, completeListening, progress } = useStore();
   const [activeTopic, setActiveTopic] = useState(null);
   const [playingId, setPlayingId] = useState(null);
   const [answers, setAnswers] = useState({});
@@ -62,7 +62,9 @@ export default function Listening() {
       if (answers[i] === q.answer) correct++;
     });
     setScore(correct);
-    if (correct > 0) addXP(correct * 10, "Listening Practice");
+    if (correct > 0 && completeListening(activeTopic.id)) {
+      addXP(correct * 10, "Listening Practice");
+    }
   }
 
   if (loading) {
@@ -191,13 +193,20 @@ export default function Listening() {
               className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-[16px] p-6 text-left cursor-pointer transition-all hover:-translate-y-1 hover:border-gray-300 dark:border-slate-600 shadow-sm hover:shadow-md flex flex-col group"
             >
               <div className="flex justify-between items-start mb-3">
-                <span className={`text-[0.7rem] uppercase tracking-[1.5px] font-bold px-2.5 py-1 rounded-full ${
-                  t.level === 'Beginner' ? 'bg-green-50 text-green-700 border border-green-200' :
-                  t.level === 'Intermediate' || t.level === 'Advanced' ? 'bg-yellow-50 text-yellow-700 border border-yellow-200' :
-                  'bg-red-50 text-red-700 border border-red-200'
-                }`}>
-                  {t.level || t.type}
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className={`text-[0.7rem] uppercase tracking-[1.5px] font-bold px-2.5 py-1 rounded-full ${
+                    t.level === 'Beginner' ? 'bg-green-50 text-green-700 border border-green-200' :
+                    t.level === 'Intermediate' || t.level === 'Advanced' ? 'bg-yellow-50 text-yellow-700 border border-yellow-200' :
+                    'bg-red-50 text-red-700 border border-red-200'
+                  }`}>
+                    {t.level || t.type}
+                  </span>
+                  {progress.listeningCompleted?.[t.id] && (
+                    <span className="text-[0.65rem] uppercase tracking-[1px] font-bold text-green-700 bg-green-100 px-2 py-0.5 rounded-full border border-green-200">
+                      Selesai
+                    </span>
+                  )}
+                </div>
                 <span className="text-[0.8rem] text-gray-500 dark:text-gray-400 font-mono font-bold">Audio</span>
               </div>
               <h3 className="text-[1.1rem] font-bold text-gray-900 dark:text-gray-100 m-0 mb-3 group-hover:text-rose-700 dark:text-rose-400 transition-colors">

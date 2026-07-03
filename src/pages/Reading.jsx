@@ -4,7 +4,7 @@ import { fetchReading } from "../utils/api";
 import { cleanAIPrompt } from "../utils/helpers";
 
 export default function Reading() {
-  const { addXP } = useStore();
+  const { addXP, completeReading, progress } = useStore();
   const [phase, setPhase] = useState("list");
   const [activePassage, setActivePassage] = useState(null);
   const [answers, setAnswers] = useState({});
@@ -69,7 +69,7 @@ export default function Reading() {
     setScore(currentScore);
     
     const xp = currentScore * 15 + (currentScore === activePassage.questions.length ? 30 : 0);
-    if (xp > 0) {
+    if (xp > 0 && completeReading(activePassage.id)) {
       addXP(xp, "Reading Comprehension");
     }
     
@@ -243,13 +243,20 @@ export default function Reading() {
               className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-[16px] p-6 text-left cursor-pointer transition-all hover:-translate-y-1 hover:border-gray-300 dark:border-slate-600 shadow-sm hover:shadow-md group flex flex-col"
             >
               <div className="flex justify-between items-start mb-3">
-                <span className={`text-[0.7rem] uppercase tracking-[1.5px] font-bold px-2.5 py-1 rounded-full ${
-                  p.difficulty === 'Easy' ? 'bg-green-50 text-green-700 border border-green-200' :
-                  p.difficulty === 'Medium' ? 'bg-yellow-50 text-yellow-700 border border-yellow-200' :
-                  'bg-red-50 text-red-700 border border-red-200'
-                }`}>
-                  {p.difficulty}
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className={`text-[0.7rem] uppercase tracking-[1.5px] font-bold px-2.5 py-1 rounded-full ${
+                    p.difficulty === 'Easy' ? 'bg-green-50 text-green-700 border border-green-200' :
+                    p.difficulty === 'Medium' ? 'bg-yellow-50 text-yellow-700 border border-yellow-200' :
+                    'bg-red-50 text-red-700 border border-red-200'
+                  }`}>
+                    {p.difficulty}
+                  </span>
+                  {progress.readingCompleted?.[p.id] && (
+                    <span className="text-[0.65rem] uppercase tracking-[1px] font-bold text-green-700 bg-green-100 px-2 py-0.5 rounded-full border border-green-200">
+                      Selesai
+                    </span>
+                  )}
+                </div>
                 <span className="text-[0.8rem] text-gray-500 dark:text-gray-400 font-mono font-bold">{p.questions.length} Qs</span>
               </div>
               <h3 className="text-[1.1rem] font-bold text-gray-900 dark:text-gray-100 m-0 mb-2 group-hover:text-rose-700 dark:text-rose-400 transition-colors">

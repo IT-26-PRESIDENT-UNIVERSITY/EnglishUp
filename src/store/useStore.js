@@ -55,6 +55,8 @@ const defaultProgress = {
   lastDate: "",
   startDate: new Date().toISOString(),
   grammarCompleted: {},
+  readingCompleted: {},
+  listeningCompleted: {},
   completedDays: {},
   dailyGoals: { vocab: 0, grammar: 0, quiz: 0 },
   dailyGoalsDate: "",
@@ -223,6 +225,32 @@ export const useStore = create((set, get) => ({
         p.dailyGoalsDate = today;
       }
       p.dailyGoals = { ...p.dailyGoals, grammar: Math.min(p.dailyGoals.grammar + 1, 1) };
+      saveToStorage("em_progress", p);
+      return { progress: p };
+    });
+    return true;
+  },
+
+  completeReading(id) {
+    const { progress } = get();
+    if (progress.readingCompleted?.[id]) return false;
+    set((state) => {
+      const p = { ...state.progress };
+      if (!p.readingCompleted) p.readingCompleted = {};
+      p.readingCompleted = { ...p.readingCompleted, [id]: true };
+      saveToStorage("em_progress", p);
+      return { progress: p };
+    });
+    return true;
+  },
+
+  completeListening(id) {
+    const { progress } = get();
+    if (progress.listeningCompleted?.[id]) return false;
+    set((state) => {
+      const p = { ...state.progress };
+      if (!p.listeningCompleted) p.listeningCompleted = {};
+      p.listeningCompleted = { ...p.listeningCompleted, [id]: true };
       saveToStorage("em_progress", p);
       return { progress: p };
     });
