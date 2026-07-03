@@ -163,6 +163,7 @@ export default function Reading() {
   }
 
   if (phase === "reading") {
+    const isCompleted = progress.readingCompleted?.[activePassage.id];
     const allAnswered = Object.keys(answers).length === activePassage.questions.length;
     
     return (
@@ -177,6 +178,11 @@ export default function Reading() {
             </button>
             <div>
               <h1 className="text-[1.4rem] font-extrabold text-gray-900 dark:text-gray-100 m-0">{activePassage.title}</h1>
+              {isCompleted && (
+                <span className="inline-block mt-1 text-[0.7rem] uppercase tracking-[1.5px] font-bold text-green-700 bg-green-100 px-2 py-0.5 rounded-full border border-green-200">
+                  Mode Review
+                </span>
+              )}
             </div>
           </header>
 
@@ -197,15 +203,19 @@ export default function Reading() {
                   <div className="flex flex-col gap-2.5">
                     {q.options.map((opt) => {
                       const isSelected = chosen === opt;
+                      const isCorrectAnswer = isCompleted && opt === q.answer;
                       return (
                         <button
                           key={opt}
-                          onClick={() => handleAnswer(idx, opt)}
-                          className={`text-left px-4 py-3 rounded-xl border text-[0.9rem] transition-all cursor-pointer font-medium ${
-                            isSelected 
-                              ? "bg-rose-50 dark:bg-rose-900/20 border-rose-500 text-rose-800" 
-                              : "bg-white dark:bg-slate-800 border-gray-300 dark:border-slate-600 text-gray-700 dark:text-gray-300 hover:border-blue-400 hover:text-rose-800"
-                          }`}
+                          onClick={() => !isCompleted && handleAnswer(idx, opt)}
+                          disabled={isCompleted}
+                          className={`text-left px-4 py-3 rounded-xl border text-[0.9rem] transition-all font-medium ${
+                            isCorrectAnswer
+                              ? "bg-green-50 border-green-500 text-green-700 dark:bg-green-900/20"
+                              : isSelected && !isCompleted
+                                ? "bg-rose-50 dark:bg-rose-900/20 border-rose-500 text-rose-800" 
+                                : "bg-white dark:bg-slate-800 border-gray-300 dark:border-slate-600 text-gray-700 dark:text-gray-300"
+                          } ${!isCompleted ? "cursor-pointer hover:border-blue-400 hover:text-rose-800" : "cursor-default"}`}
                         >
                           {opt}
                         </button>
@@ -218,13 +228,19 @@ export default function Reading() {
           </div>
 
           <div className="flex justify-end">
-            <button 
-              onClick={submitReading}
-              disabled={!allAnswered || isGenerating}
-              className="bg-rose-700 border-none text-white px-8 py-3.5 rounded-full cursor-pointer text-[0.95rem] font-bold shadow-sm transition-all hover:opacity-90 hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none disabled:transform-none"
-            >
-              Submit Jawaban
-            </button>
+            {!isCompleted ? (
+              <button 
+                onClick={submitReading}
+                disabled={!allAnswered || isGenerating}
+                className="bg-rose-700 border-none text-white px-8 py-3.5 rounded-full cursor-pointer text-[0.95rem] font-bold shadow-sm transition-all hover:opacity-90 hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none disabled:transform-none"
+              >
+                Submit Jawaban
+              </button>
+            ) : (
+              <div className="bg-gray-100 dark:bg-slate-800 border border-gray-300 dark:border-slate-600 text-gray-500 dark:text-gray-400 px-6 py-3 rounded-full text-[0.9rem] font-bold">
+                Materi Sudah Diselesaikan
+              </div>
+            )}
           </div>
         </div>
       </div>

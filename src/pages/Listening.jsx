@@ -103,6 +103,8 @@ export default function Listening() {
   }
 
   if (activeTopic) {
+    const isCompleted = progress.listeningCompleted?.[activeTopic.id];
+
     return (
       <div className="min-h-[calc(100vh-64px)]">
         <div className="max-w-[800px] mx-auto px-4 sm:px-6 py-8 pb-16">
@@ -114,7 +116,14 @@ export default function Listening() {
               &#8592;
             </button>
             <div>
-              <h1 className="text-[1.4rem] font-extrabold text-gray-900 dark:text-gray-100 m-0">{activeTopic.title}</h1>
+              <h1 className="text-[1.4rem] font-extrabold text-gray-900 dark:text-gray-100 m-0 flex items-center gap-2">
+                {activeTopic.title}
+                {isCompleted && (
+                  <span className="text-[0.7rem] uppercase tracking-[1.5px] font-bold text-green-700 bg-green-100 px-2 py-0.5 rounded-full border border-green-200">
+                    Mode Review
+                  </span>
+                )}
+              </h1>
               <span className="text-[0.7rem] uppercase tracking-[1.5px] font-bold text-rose-700 dark:text-rose-400">{activeTopic.type}</span>
             </div>
           </header>
@@ -147,19 +156,19 @@ export default function Listening() {
                   {q.options.map(opt => (
                     <button
                       key={opt}
-                      onClick={() => score === null && handleAnswer(idx, opt)}
+                      onClick={() => score === null && !isCompleted && handleAnswer(idx, opt)}
                       className={`text-left px-4 py-2.5 rounded-xl border text-[0.85rem] transition-all font-medium ${
-                        score !== null
+                        score !== null || isCompleted
                           ? opt === q.answer 
                             ? "bg-green-50 border-green-500 text-green-700" 
-                            : opt === answers[idx] 
+                            : score !== null && opt === answers[idx] 
                               ? "bg-red-50 border-red-400 text-red-700" 
                               : "bg-gray-50 dark:bg-slate-900/50 border-gray-200 dark:border-slate-700 text-gray-400"
                           : answers[idx] === opt
                             ? "bg-rose-50 dark:bg-rose-900/20 border-rose-500 text-rose-800"
                             : "bg-white dark:bg-slate-800 border-gray-300 dark:border-slate-600 text-gray-700 dark:text-gray-300 hover:border-blue-400 hover:bg-gray-50 dark:hover:bg-slate-700"
                       }`}
-                      disabled={score !== null}
+                      disabled={score !== null || isCompleted}
                     >
                       {opt}
                     </button>
@@ -169,7 +178,7 @@ export default function Listening() {
             ))}
           </div>
 
-          {score === null ? (
+          {score === null && !isCompleted ? (
             <button 
               onClick={submitAnswers}
               disabled={Object.keys(answers).length !== activeTopic.questions.length || isGenerating}
@@ -177,10 +186,14 @@ export default function Listening() {
             >
               Submit Jawaban
             </button>
-          ) : (
+          ) : score !== null ? (
             <div className="bg-green-50 border border-green-200 p-5 rounded-2xl text-center">
               <h3 className="text-[1.2rem] font-extrabold text-green-700 mb-2 m-0">Skor: {score}/{activeTopic.questions.length}</h3>
               <p className="text-[0.9rem] text-green-600 m-0">+{score * 10} XP diperoleh.</p>
+            </div>
+          ) : (
+            <div className="bg-gray-100 dark:bg-slate-800 border border-gray-300 dark:border-slate-600 p-5 rounded-2xl text-center text-gray-500 dark:text-gray-400 font-bold">
+              Materi Sudah Diselesaikan
             </div>
           )}
         </div>
