@@ -200,15 +200,22 @@ export default function Grammar() {
             return (
               <button
                 key={l.id}
-                onClick={() => handleSelectLesson(l)}
-                className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-[16px] p-5 text-left cursor-pointer transition-all hover:-translate-y-1 hover:border-gray-300 dark:border-slate-600 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4 group"
+                onClick={() => !isCompleted && handleSelectLesson(l)}
+                disabled={isCompleted}
+                className={`border border-gray-200 dark:border-slate-700 rounded-[16px] p-5 text-left transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${
+                  isCompleted
+                    ? "bg-green-50/50 dark:bg-green-900/10 cursor-default"
+                    : "bg-white dark:bg-slate-800 cursor-pointer hover:-translate-y-1 hover:border-gray-300 dark:border-slate-600 shadow-sm group"
+                }`}
               >
                 <div>
                   <div className="flex items-center gap-3 mb-1.5">
                     <span className="text-[0.7rem] font-mono font-bold bg-gray-100 dark:bg-slate-700 text-gray-500 dark:text-gray-400 px-2 py-0.5 rounded">
                       #{pad(i + 1)}
                     </span>
-                    <h3 className="text-[1.1rem] font-bold text-gray-900 dark:text-gray-100 m-0 group-hover:text-rose-700 dark:text-rose-400 transition-colors">
+                    <h3 className={`text-[1.1rem] font-bold m-0 transition-colors ${
+                      isCompleted ? "text-green-800 dark:text-green-500" : "text-gray-900 dark:text-gray-100 group-hover:text-rose-700 dark:text-rose-400"
+                    }`}>
                       {l.title}
                     </h3>
                   </div>
@@ -216,14 +223,15 @@ export default function Grammar() {
                 </div>
                 
                 <div className="shrink-0 flex items-center gap-3">
-                  {isCompleted && (
-                    <span className="bg-green-100 text-green-700 px-2.5 py-1 rounded-md text-[0.7rem] font-bold uppercase tracking-[1px]">
-                      Selesai
+                  {isCompleted ? (
+                    <span className="bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-3 py-1.5 rounded-full text-[0.75rem] font-bold uppercase tracking-[1px] shadow-sm">
+                      ✨ Accomplished
+                    </span>
+                  ) : (
+                    <span className="text-gray-400 group-hover:text-rose-700 dark:text-rose-400 transition-colors text-[1.2rem]">
+                      &#8594;
                     </span>
                   )}
-                  <span className="text-gray-400 group-hover:text-rose-700 dark:text-rose-400 transition-colors text-[1.2rem]">
-                    &#8594;
-                  </span>
                 </div>
               </button>
             );
