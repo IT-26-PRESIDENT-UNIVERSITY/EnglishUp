@@ -76,25 +76,23 @@ REQUIREMENTS:
 4. Respond in STRICT JSON format: { "text": "<string: the generated text>" }`;
 
   const body = {
-    contents: [
-      {
-        role: "user",
-        parts: [{ text: "Generate the text now." }]
-      }
+    model: "nvidia/nemotron-3-super-120b-a12b:free",
+    messages: [
+      { role: "system", content: systemInstruction },
+      { role: "user", content: "Generate the text now." }
     ],
-    systemInstruction: {
-      role: "system",
-      parts: [{ text: systemInstruction }]
-    },
-    generationConfig: {
-      temperature: 0.8,
-      responseMimeType: "application/json"
-    }
+    temperature: 0.8,
+    response_format: { type: "json_object" }
   };
 
-  const res = await fetch(`${GEMINI_API_URL}?key=${GEMINI_API_KEY}`, {
+  const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Authorization": `Bearer ${OPENROUTER_API_KEY}`,
+      "Content-Type": "application/json",
+      "HTTP-Referer": "https://president.ac.id", 
+      "X-Title": "EnglishUp President University"
+    },
     body: JSON.stringify(body)
   });
 
@@ -103,6 +101,6 @@ REQUIREMENTS:
   }
 
   const data = await res.json();
-  const content = data.candidates[0].content.parts[0].text;
+  const content = data.choices[0].message.content;
   return JSON.parse(content).text;
 }
