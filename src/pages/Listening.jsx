@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useStore } from "../store/useStore";
 import { fetchListening } from "../utils/api";
-import { speak } from "../utils/helpers";
+import { speak, cleanAIPrompt } from "../utils/helpers";
 
 export default function Listening() {
   const { addXP } = useStore();
@@ -13,6 +13,9 @@ export default function Listening() {
   const [listeningTopics, setListeningTopics] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filterMode, setFilterMode] = useState("general");
+  
+  const [page, setPage] = useState(1);
+  const ITEMS_PER_PAGE = 4;
 
   const filteredTopics = listeningTopics.filter(t => {
     if (filterMode === "all") return true;
@@ -20,6 +23,13 @@ export default function Listening() {
     if (filterMode === "academic") return isAcademic;
     return !isAcademic;
   });
+
+  const totalPages = Math.ceil(filteredTopics.length / ITEMS_PER_PAGE) || 1;
+  const paginatedTopics = filteredTopics.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE);
+
+  useEffect(() => {
+    setPage(1);
+  }, [filterMode]);
 
   useEffect(() => {
     async function loadData() {
@@ -37,7 +47,7 @@ export default function Listening() {
 
   function handlePlay(id, text) {
     setPlayingId(id);
-    speak(text, 0.9);
+    speak(cleanAIPrompt(text), 0.9);
     setTimeout(() => setPlayingId(null), 3000); // Mock reset
   }
 
@@ -95,7 +105,7 @@ export default function Listening() {
 
           <div className="bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 rounded-[20px] p-6 mb-8 shadow-sm">
             <h2 className="text-[1rem] font-bold text-gray-900 dark:text-gray-100 mb-4">Transcript</h2>
-            <p className="text-[0.95rem] leading-relaxed text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{activeTopic.script || activeTopic.transcript}</p>
+            <p className="text-[0.95rem] leading-relaxed text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{cleanAIPrompt(activeTopic.script || activeTopic.transcript)}</p>
           </div>
 
           <h2 className="text-[1.2rem] font-bold text-gray-900 dark:text-gray-100 mb-5">Comprehension Check</h2>
@@ -172,8 +182,8 @@ export default function Listening() {
           ))}
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {filteredTopics.map((t) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+          {paginatedTopics.map((t) => (
             <button
               key={t.id}
               onClick={() => setActiveTopic(t)}
@@ -193,11 +203,33 @@ export default function Listening() {
                 {t.title}
               </h3>
               <p className="text-[0.85rem] text-gray-600 dark:text-gray-400 m-0 line-clamp-2 leading-relaxed flex-1">
-                {String(t.script || t.transcript || "").substring(0, 100)}...
+                {cleanAIPrompt(String(t.script || t.transcript || "")).substring(0, 100)}...
               </p>
             </button>
           ))}
         </div>
+
+        {totalPages > 1 && (
+          <div className="flex justify-center items-center gap-4 mt-8">
+            <button
+              disabled={page === 1}
+              onClick={() => setPage(p => Math.max(1, p - 1))}
+              className="px-4 py-2 rounded-full border border-gray-300 dark:border-slate-600 text-gray-700 dark:text-gray-300 disabled:opacity-50 font-bold text-[0.9rem]"
+            >
+              Prev
+            </button>
+            <span className="text-[0.9rem] font-bold text-gray-600 dark:text-gray-400">
+              Halaman {page} dari {totalPages}
+            </span>
+            <button
+              disabled={page === totalPages}
+              onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+              className="px-4 py-2 rounded-full border border-gray-300 dark:border-slate-600 text-gray-700 dark:text-gray-300 disabled:opacity-50 font-bold text-[0.9rem]"
+            >
+              Next
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

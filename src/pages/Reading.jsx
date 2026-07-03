@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useStore } from "../store/useStore";
 import { fetchReading } from "../utils/api";
+import { cleanAIPrompt } from "../utils/helpers";
 
 export default function Reading() {
   const { addXP } = useStore();
@@ -12,13 +13,24 @@ export default function Reading() {
   const [readingPassages, setReadingPassages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filterMode, setFilterMode] = useState("general");
+  
+  const [page, setPage] = useState(1);
+  const ITEMS_PER_PAGE = 4;
 
   const filteredPassages = readingPassages.filter(p => {
     if (filterMode === "all") return true;
     const isAcademic = p.level === "TOEFL" || p.level === "IELTS" || p.difficulty === "Hard";
     if (filterMode === "academic") return isAcademic;
-    return !isAcademic; // general
+    return !isAcademic;
   });
+
+  const totalPages = Math.ceil(filteredPassages.length / ITEMS_PER_PAGE) || 1;
+  const paginatedPassages = filteredPassages.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE);
+
+  // Reset page when filter changes
+  useEffect(() => {
+    setPage(1);
+  }, [filterMode]);
 
   useEffect(() => {
     async function loadData() {
@@ -149,8 +161,8 @@ export default function Reading() {
 
           <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-[20px] p-6 sm:p-8 mb-8 shadow-sm">
             <h2 className="text-[0.75rem] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-[1.5px] mb-4">Teks Bacaan</h2>
-            <p className="text-[1rem] leading-[1.8] text-gray-800 dark:text-gray-200 m-0">
-              {activePassage.text || activePassage.content}
+            <p className="text-[1rem] leading-[1.8] text-gray-800 dark:text-gray-200 m-0 whitespace-pre-wrap">
+              {cleanAIPrompt(activePassage.text || activePassage.content)}
             </p>
           </div>
 
@@ -222,8 +234,8 @@ export default function Reading() {
           ))}
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {filteredPassages.map((p) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+          {paginatedPassages.map((p) => (
             <button
               key={p.id}
               onClick={() => startPassage(p)}
@@ -243,7 +255,7 @@ export default function Reading() {
                 {p.title}
               </h3>
               <p className="text-[0.85rem] text-gray-600 dark:text-gray-400 m-0 line-clamp-2 leading-relaxed flex-1">
-                {p.text || p.content}
+                {cleanAIPrompt(p.text || p.content)}
               </p>
               <div className="mt-4 text-[0.85rem] font-bold text-rose-700 dark:text-rose-400 flex items-center gap-2">
                 Mulai Baca &rarr;
@@ -251,6 +263,28 @@ export default function Reading() {
             </button>
           ))}
         </div>
+
+        {totalPages > 1 && (
+          <div className="flex justify-center items-center gap-4 mt-8">
+            <button
+              disabled={page === 1}
+              onClick={() => setPage(p => Math.max(1, p - 1))}
+              className="px-4 py-2 rounded-full border border-gray-300 dark:border-slate-600 text-gray-700 dark:text-gray-300 disabled:opacity-50 font-bold text-[0.9rem]"
+            >
+              Prev
+            </button>
+            <span className="text-[0.9rem] font-bold text-gray-600 dark:text-gray-400">
+              Halaman {page} dari {totalPages}
+            </span>
+            <button
+              disabled={page === totalPages}
+              onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+              className="px-4 py-2 rounded-full border border-gray-300 dark:border-slate-600 text-gray-700 dark:text-gray-300 disabled:opacity-50 font-bold text-[0.9rem]"
+            >
+              Next
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -38,11 +38,17 @@ export default function Speaking() {
       rec.lang = 'en-US';
 
       rec.onresult = (event) => {
-        let currentTranscript = "";
+        let final = "";
+        let interim = "";
         for (let i = 0; i < event.results.length; i++) {
-          currentTranscript += event.results[i][0].transcript + " ";
+          if (event.results[i].isFinal) {
+            final += event.results[i][0].transcript + " ";
+          } else {
+            // Android often creates multiple interim results, take the last one
+            interim = event.results[i][0].transcript;
+          }
         }
-        setTranscript(currentTranscript.trim());
+        setTranscript((final + " " + interim).trim());
       };
 
       rec.onerror = (event) => {

@@ -47,3 +47,16 @@ export async function translateText(text) {
     return text;
   }
 }
+
+export function cleanAIPrompt(text) {
+  if (!text) return "";
+  return text
+    .replace(/\(Imagine.*?\)/gi, '')
+    .replace(/Prompt:.*?(?=\n|$)/gi, '')
+    .replace(/Here is.*?(?=\n|$)/gi, '')
+    .replace(/Based on.*?(?=\n|$)/gi, '')
+    .replace(/Sure,.*?(?=\n|$)/gi, '')
+    .replace(/This is a comprehensive passage.*?(?=\n|$)/gi, '')
+    .replace(/\[Speaker A\].*?Intermediate level is unprecedented\.\.\./gi, '')
+    .trim();
+}

@@ -74,7 +74,10 @@ export default function Quiz() {
 
   function startQuiz(t) {
     const qs = buildQuestions(t);
-    if (qs.length === 0) return;
+    if (qs.length === 0) {
+      useStore.getState().setToast("Bank soal untuk kategori ini sedang kosong!");
+      return;
+    }
     questionsRef.current = qs;
     scoreRef.current = 0;
     qIdxRef.current = 0;
