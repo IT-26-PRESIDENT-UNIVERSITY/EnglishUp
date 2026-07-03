@@ -60,12 +60,13 @@ All scores must follow standard IELTS band scores (0.0 to 9.0 in increments of 0
   }
 
   const data = await res.json();
-  const content = data.choices[0].message.content;
+  let content = data.choices[0].message.content;
+  content = content.replace(/^```(json)?\n?/i, '').replace(/\n?```$/i, '').trim();
   return JSON.parse(content);
 }
 
 export async function generateDynamicText(type, title, questions) {
-  if (!GEMINI_API_KEY) throw new Error("Gemini API Key missing");
+  if (!OPENROUTER_API_KEY) throw new Error("OpenRouter API Key missing");
 
   const isReading = type === 'reading';
   const systemInstruction = `You are an expert English teacher. Create a ${isReading ? 'reading comprehension passage' : 'listening transcript / dialogue'} for the topic: "${title}".
@@ -101,6 +102,7 @@ REQUIREMENTS:
   }
 
   const data = await res.json();
-  const content = data.choices[0].message.content;
+  let content = data.choices[0].message.content;
+  content = content.replace(/^```(json)?\n?/i, '').replace(/\n?```$/i, '').trim();
   return JSON.parse(content).text;
 }
