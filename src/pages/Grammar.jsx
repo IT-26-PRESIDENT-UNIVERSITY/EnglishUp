@@ -5,7 +5,7 @@ import { fetchGrammar } from "../utils/api";
 import { pad } from "../utils/helpers";
 
 export default function Grammar() {
-  const { addXP, incrementGrammar, progress } = useStore();
+  const { addXP, completeGrammar, progress } = useStore();
   const [searchParams, setSearchParams] = useSearchParams();
   const [grammarLessons, setGrammarLessons] = useState([]);
   const [activeLesson, setActiveLesson] = useState(null);
@@ -56,7 +56,7 @@ export default function Grammar() {
     if (correct === activeLesson.practice.length) {
       if (!progress.grammarCompleted?.[activeLesson.id]) {
         addXP(20, `Grammar: ${activeLesson.title}`);
-        incrementGrammar(activeLesson.id);
+        completeGrammar(activeLesson.id);
       }
     }
     setShowResult(true);

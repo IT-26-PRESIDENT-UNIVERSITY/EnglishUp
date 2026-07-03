@@ -123,7 +123,7 @@ export default function Dashboard() {
             { value: progress.wordsLearned, label: "Kata Dikuasai" },
             { value: Object.keys(progress.grammarCompleted || {}).length, label: "Grammar Tamat" },
             { value: progress.streak, label: "Hari Berturut" },
-            { value: progress.xp, label: "Total XP" },
+            { value: ((progress.level - 1) * progress.level / 2 * 100) + progress.xp, label: "Total XP" },
           ].map((s) => (
             <div key={s.label} className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-2xl p-5 flex flex-col gap-1 transition-all duration-200 shadow-sm">
               <span className="text-[1.8rem] font-extrabold text-rose-700 dark:text-rose-400 font-mono leading-none">{s.value}</span>
