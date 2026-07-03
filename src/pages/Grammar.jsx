@@ -48,15 +48,15 @@ export default function Grammar() {
   }
 
   function submitAnswers() {
+    if (showResult) return;
     let correct = 0;
     activeLesson.practice.forEach((p, i) => {
       if (answers[i] === p.answer) correct++;
     });
 
     if (correct === activeLesson.practice.length) {
-      if (!progress.grammarCompleted?.[activeLesson.id]) {
+      if (completeGrammar(activeLesson.id)) {
         addXP(20, `Grammar: ${activeLesson.title}`);
-        completeGrammar(activeLesson.id);
       }
     }
     setShowResult(true);

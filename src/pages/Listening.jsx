@@ -56,6 +56,7 @@ export default function Listening() {
   }
 
   function submitAnswers() {
+    if (score !== null) return;
     let correct = 0;
     activeTopic.questions.forEach((q, i) => {
       if (answers[i] === q.answer) correct++;

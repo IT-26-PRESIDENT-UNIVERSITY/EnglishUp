@@ -59,6 +59,7 @@ export default function Reading() {
   }
 
   function submitReading() {
+    if (phase !== "reading") return;
     let currentScore = 0;
     activePassage.questions.forEach((q, idx) => {
       if (answers[idx] === q.answer) {
