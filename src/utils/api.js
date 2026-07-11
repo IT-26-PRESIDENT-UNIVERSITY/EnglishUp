@@ -148,17 +148,34 @@ export const fetchQuiz = async (type) => {
   });
 
   const grammarQuizzes = [
-    { id: 'g_1', category: 'grammar', question: 'She ___ to the store every day.', options: ['go', 'goes', 'going', 'gone'], answer: 'goes', explanation: 'Subjek tunggal (she) pada Simple Present Tense menggunakan verb+s/es.' },
-    { id: 'g_2', category: 'grammar', question: 'I have never ___ such a beautiful sunset.', options: ['see', 'saw', 'seen', 'seeing'], answer: 'seen', explanation: 'Present Perfect Tense menggunakan have + verb 3 (seen).' },
-    { id: 'g_3', category: 'grammar', question: 'They ___ playing football when it started to rain.', options: ['are', 'were', 'was', 'have been'], answer: 'were', explanation: 'Past Continuous tense dengan subjek jamak (they) menggunakan were.' },
-    { id: 'g_4', category: 'grammar', question: 'If I ___ you, I would study harder.', options: ['am', 'was', 'were', 'been'], answer: 'were', explanation: 'Conditional sentence tipe 2 selalu menggunakan "were" untuk semua subjek.' },
-    { id: 'g_5', category: 'grammar', question: 'The book ___ written by an anonymous author.', options: ['is', 'are', 'has', 'does'], answer: 'is', explanation: 'Kalimat pasif (passive voice) singular menggunakan is + verb 3.' },
-    { id: 'g_6', category: 'grammar', question: 'We look forward to ___ you next week.', options: ['see', 'seeing', 'seen', 'saw'], answer: 'seeing', explanation: 'Frasa "look forward to" selalu diikuti oleh gerund (verb-ing).' },
-    { id: 'g_7', category: 'grammar', question: 'He is the man ___ car was stolen.', options: ['who', 'whom', 'whose', 'which'], answer: 'whose', explanation: 'Relative pronoun untuk kepemilikan adalah whose.' },
-    { id: 'g_8', category: 'grammar', question: 'I ___ my homework before the teacher arrived.', options: ['finished', 'have finished', 'had finished', 'finish'], answer: 'had finished', explanation: 'Aksi yang terjadi sebelum aksi lampau lainnya menggunakan Past Perfect (had + V3).' },
-    { id: 'g_9', category: 'grammar', question: 'Neither the manager nor the employees ___ aware of the issue.', options: ['was', 'were', 'is', 'has been'], answer: 'were', explanation: 'Pada pola "neither... nor...", verb mengikuti subjek terdekat (the employees - plural).' },
-    { id: 'g_10', category: 'grammar', question: 'She would rather ___ at home tonight.', options: ['stay', 'to stay', 'staying', 'stayed'], answer: 'stay', explanation: '"Would rather" diikuti oleh bare infinitive (kata kerja dasar tanpa to).' }
+    { id: 'g_1', category: 'grammar', question: 'She ___ to the store every day.', options: ['go', 'goes', 'going', 'gone'], answerHash: 'f1537d8de0bbe107268e2b4263ae6753d2de8a56cb6463b92d7df109079aad51', explanation: 'Subjek tunggal (she) pada Simple Present Tense menggunakan verb+s/es.' },
+    { id: 'g_2', category: 'grammar', question: 'I have never ___ such a beautiful sunset.', options: ['see', 'saw', 'seen', 'seeing'], answerHash: '7208794c984ea1c75d13877c7427336fe98722c41a056eeee4f37360ec367123', explanation: 'Present Perfect Tense menggunakan have + verb 3 (seen).' },
+    { id: 'g_3', category: 'grammar', question: 'They ___ playing football when it started to rain.', options: ['are', 'were', 'was', 'have been'], answerHash: '910adfb424646393d81506a4b18638c5ceafff0bb32994c97d916b600d04ecb5', explanation: 'Past Continuous tense dengan subjek jamak (they) menggunakan were.' },
+    { id: 'g_4', category: 'grammar', question: 'If I ___ you, I would study harder.', options: ['am', 'was', 'were', 'been'], answerHash: '910adfb424646393d81506a4b18638c5ceafff0bb32994c97d916b600d04ecb5', explanation: 'Conditional sentence tipe 2 selalu menggunakan "were" untuk semua subjek.' },
+    { id: 'g_5', category: 'grammar', question: 'The book ___ written by an anonymous author.', options: ['is', 'are', 'has', 'does'], answerHash: 'fa51fd49abf67705d6a35d18218c115ff5633aec1f9ebfdc9d5d4956416f57f6', explanation: 'Kalimat pasif (passive voice) singular menggunakan is + verb 3.' },
+    { id: 'g_6', category: 'grammar', question: 'We look forward to ___ you next week.', options: ['see', 'seeing', 'seen', 'saw'], answerHash: '236707bfb83474fad55a3913e369ef229709959c7799a69b9b3bad94d7606456', explanation: 'Frasa "look forward to" selalu diikuti oleh gerund (verb-ing).' },
+    { id: 'g_7', category: 'grammar', question: 'He is the man ___ car was stolen.', options: ['who', 'whom', 'whose', 'which'], answerHash: '55efa0938f9f52fb6de33f27375ee1916aa9c5d27367eac89ea1207026bb16f8', explanation: 'Relative pronoun untuk kepemilikan adalah whose.' },
+    { id: 'g_8', category: 'grammar', question: 'I ___ my homework before the teacher arrived.', options: ['finished', 'have finished', 'had finished', 'finish'], answerHash: '733ea9caeaf050befda0a3c3f09e5878a67db8d02fcfda2637f389e3f6ca21b9', explanation: 'Aksi yang terjadi sebelum aksi lampau lainnya menggunakan Past Perfect (had + V3).' },
+    { id: 'g_9', category: 'grammar', question: 'Neither the manager nor the employees ___ aware of the issue.', options: ['was', 'were', 'is', 'has been'], answerHash: '910adfb424646393d81506a4b18638c5ceafff0bb32994c97d916b600d04ecb5', explanation: 'Pada pola "neither... nor...", verb mengikuti subjek terdekat (the employees - plural).' },
+    { id: 'g_10', category: 'grammar', question: 'She would rather ___ at home tonight.', options: ['stay', 'to stay', 'staying', 'stayed'], answerHash: '39be15289c7942a8e7765d75584b0bce0a4a39c29a356fbaee44f63848ba6cb0', explanation: '"Would rather" diikuti oleh bare infinitive (kata kerja dasar tanpa to).' }
   ];
+
+  // Dynamically hash answers for vocab and translate to avoid sending plaintext to UI component state
+  const { sha256 } = await import('./helpers');
+  
+  for (const q of vocabQuizzes) {
+    if (q.answer) {
+      q.answerHash = await sha256(q.answer);
+      delete q.answer;
+    }
+  }
+  
+  for (const q of translateQuizzes) {
+    if (q.answer) {
+      q.answerHash = await sha256(q.answer);
+      delete q.answer;
+    }
+  }
 
   const formatted = {
     vocab: vocabQuizzes,

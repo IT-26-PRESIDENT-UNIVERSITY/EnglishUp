@@ -17,6 +17,7 @@ export default function Quiz() {
   const [qIdx, setQIdx] = useState(0);
   const [score, setScore] = useState(0);
   const [chosen, setChosen] = useState(null);
+  const [correctAnswer, setCorrectAnswer] = useState(null);
   const [timeLeft, setTimeLeft] = useState(30);
   const [shuffledOpts, setShuffledOpts] = useState([]);
   
@@ -86,22 +87,44 @@ export default function Quiz() {
     setQIdx(0);
     setScore(0);
     setChosen(null);
+    setCorrectAnswer(null);
     setShuffledOpts(shuffle(qs[0].options));
     setTimeLeft(30);
     setPhase("active");
   }
 
-  function doTimeout() {
+  async function resolveCorrectAnswer(q) {
+    const { sha256 } = await import('../utils/helpers');
+    for (const opt of q.options) {
+      if ((await sha256(opt)) === q.answerHash) {
+        return opt;
+      }
+    }
+    return null;
+  }
+
+  async function doTimeout() {
     chosenRef.current = "__timeout__";
+    const q = questionsRef.current[qIdxRef.current];
+    const actualCorrect = await resolveCorrectAnswer(q);
+    setCorrectAnswer(actualCorrect);
     setChosen("__timeout__");
     setTimeout(() => doAdvance(false), 2000);
   }
 
-  function handleAnswer(opt) {
+  async function handleAnswer(opt) {
     if (chosenRef.current) return;
     clearInterval(timerRef.current);
     const q = questionsRef.current[qIdxRef.current];
-    const correct = opt === q.answer;
+    
+    // Hash selected option and compare to answerHash
+    const { sha256 } = await import('../utils/helpers');
+    const optHash = await sha256(opt);
+    const correct = optHash === q.answerHash;
+    
+    const actualCorrect = correct ? opt : await resolveCorrectAnswer(q);
+    setCorrectAnswer(actualCorrect);
+    
     chosenRef.current = opt;
     setChosen(opt);
     if (correct) {
@@ -238,8 +261,8 @@ export default function Quiz() {
             {shuffledOpts.map((opt) => {
               let cls = "px-5 py-3.5 rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900/50 text-gray-800 dark:text-gray-200 cursor-pointer text-left text-[0.9rem] transition-all hover:not-disabled:border-blue-400 hover:not-disabled:bg-rose-50 dark:bg-rose-900/20 disabled:cursor-default font-medium";
               if (chosen) {
-                if (opt === q.answer) cls = "px-5 py-3.5 rounded-xl border border-green-500 bg-green-50 text-green-700 text-left text-[0.9rem] cursor-default font-bold";
-                else if (opt === chosen && chosen !== q.answer) cls = "px-5 py-3.5 rounded-xl border border-red-400 bg-red-50 text-red-700 text-left text-[0.9rem] cursor-default font-bold";
+                if (opt === correctAnswer) cls = "px-5 py-3.5 rounded-xl border border-green-500 bg-green-50 text-green-700 text-left text-[0.9rem] cursor-default font-bold";
+                else if (opt === chosen && chosen !== correctAnswer) cls = "px-5 py-3.5 rounded-xl border border-red-400 bg-red-50 text-red-700 text-left text-[0.9rem] cursor-default font-bold";
                 else cls = "px-5 py-3.5 rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900/50 text-gray-500 dark:text-gray-400 text-left text-[0.9rem] cursor-default";
               }
               return (
@@ -256,14 +279,14 @@ export default function Quiz() {
           </div>
         </div>
 
-        {chosen && (
+        {chosen && correctAnswer && (
           <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl px-5 py-4 shadow-sm">
-            {chosen === q.answer ? (
+            {chosen === correctAnswer ? (
               <p className="text-[0.9rem] text-green-600 m-0 leading-relaxed font-bold">Benar! {q.explanation}</p>
             ) : chosen === "__timeout__" ? (
-              <p className="text-[0.9rem] text-yellow-700 m-0 leading-relaxed font-bold">Waktu habis! Jawabannya: {q.answer}</p>
+              <p className="text-[0.9rem] text-yellow-700 m-0 leading-relaxed font-bold">Waktu habis! Jawabannya: {correctAnswer}</p>
             ) : (
-              <p className="text-[0.9rem] text-yellow-700 m-0 leading-relaxed font-bold">Salah. Jawabannya: {q.answer}. {q.explanation}</p>
+              <p className="text-[0.9rem] text-yellow-700 m-0 leading-relaxed font-bold">Salah. Jawabannya: {correctAnswer}. {q.explanation}</p>
             )}
           </div>
         )}
