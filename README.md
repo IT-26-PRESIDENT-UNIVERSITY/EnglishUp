@@ -18,8 +18,10 @@ Platform belajar Bahasa Inggris interaktif yang dirancang khusus untuk mahasiswa
 1. Pastikan Node.js sudah terinstal.
 2. Clone repository ini.
 3. Buka terminal dan jalankan `npm install`
-4. Buat file `.env` dan masukkan API keys yang dibutuhkan (Supabase & Gemini).
-5. Jalankan `npm run dev`
+4. Copy example environment file dengan menjalankan `cp .env.example .env` di terminal
+5. Masukkan API keys yang dibutuhkan (Supabase dan OpenRouter).
+6. Jalankan database lokal dengan cara `npx json-server --watch db.json --port 5000`di terminal
+7. Jalankan `npm run dev`
 
 ---
 *Dibuat oleh Information Technology Batch 2026 - President University*
