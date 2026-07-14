@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useStore } from "../store/useStore";
 import { pad } from "../utils/helpers";
-import { METHODS, topicLabels, daysSinceStart } from "../utils/constants";
+import { METHODS, topicLabels } from "../utils/constants";
 import { fetchCurriculum, fetchGrammar } from "../utils/api";
 
 export default function Dashboard() {
@@ -13,6 +13,17 @@ export default function Dashboard() {
   const [curriculum, setCurriculum] = useState(null);
   const [grammarLessons, setGrammarLessons] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!localStorage.getItem("global_reset_v1")) {
+      useStore.getState().resetProgress();
+      localStorage.setItem("global_reset_v1", "done");
+      import("../utils/supabase").then(({ supabase }) => {
+        supabase.auth.updateUser({ data: { progress: null } });
+      });
+      window.location.reload();
+    }
+  }, []);
 
   useEffect(() => {
     function tick() {
@@ -57,7 +68,7 @@ export default function Dashboard() {
   const grammarPct = Math.min((dailyGoals.grammar / 1) * 100, 100);
   const quizPct = Math.min((dailyGoals.quiz / 5) * 100, 100);
 
-  const currentDayOffset = daysSinceStart();
+  const currentDayOffset = useStore.getState().getUserDayOffset();
   const DAILY_PLAN = curriculum.dailyPlan;
   const todayPlan = DAILY_PLAN[currentDayOffset] || DAILY_PLAN[DAILY_PLAN.length - 1] || {};
   const todayGrammar = grammarLessons.find((l) => l.id === todayPlan.grammar);
@@ -121,9 +132,9 @@ export default function Dashboard() {
         <section className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
           {[
             { value: progress.wordsLearned, label: "Kata Dikuasai" },
-            { value: Object.keys(progress.grammarCompleted).length, label: "Grammar Tamat" },
+            { value: Object.keys(progress.grammarCompleted || {}).length, label: "Grammar Tamat" },
             { value: progress.streak, label: "Hari Berturut" },
-            { value: progress.xp, label: "Total XP" },
+            { value: ((progress.level - 1) * progress.level / 2 * 100) + progress.xp, label: "Total XP" },
           ].map((s) => (
             <div key={s.label} className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-2xl p-5 flex flex-col gap-1 transition-all duration-200 shadow-sm">
               <span className="text-[1.8rem] font-extrabold text-rose-700 dark:text-rose-400 font-mono leading-none">{s.value}</span>

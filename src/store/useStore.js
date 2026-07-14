@@ -53,7 +53,10 @@ const defaultProgress = {
   streak: 0,
   wordsLearned: 0,
   lastDate: "",
+  startDate: new Date().toISOString(),
   grammarCompleted: {},
+  readingCompleted: {},
+  listeningCompleted: {},
   completedDays: {},
   dailyGoals: { vocab: 0, grammar: 0, quiz: 0 },
   dailyGoalsDate: "",
@@ -113,7 +116,16 @@ export const useStore = create((set, get) => ({
     return get().progress.level * 100;
   },
 
-  getCurrentDay,
+  getUserDayOffset() {
+    const p = get().progress;
+    const startDateStr = p.startDate || "2026-06-29T00:00:00";
+    const start = new Date(startDateStr);
+    const now = new Date();
+    start.setHours(0, 0, 0, 0);
+    now.setHours(0, 0, 0, 0);
+    const diff = Math.floor((now - start) / 86400000);
+    return Math.max(0, diff);
+  },
 
   getDailyGoals() {
     const p = get().progress;
@@ -141,11 +153,14 @@ export const useStore = create((set, get) => ({
       if (p.lastDate !== today) {
         if (p.lastDate) {
           const last = new Date(p.lastDate);
+          last.setHours(0, 0, 0, 0);
           const now = new Date();
-          const dayDiff = Math.round((now - last) / 86400000);
+          now.setHours(0, 0, 0, 0);
+          const dayDiff = Math.floor((now - last) / 86400000);
+          
           if (dayDiff > 1) {
-            p.streak = 0;
-          } else {
+            p.streak = 1; // start a new streak today
+          } else if (dayDiff === 1) {
             p.streak = p.streak + 1;
           }
         } else {
@@ -210,6 +225,32 @@ export const useStore = create((set, get) => ({
         p.dailyGoalsDate = today;
       }
       p.dailyGoals = { ...p.dailyGoals, grammar: Math.min(p.dailyGoals.grammar + 1, 1) };
+      saveToStorage("em_progress", p);
+      return { progress: p };
+    });
+    return true;
+  },
+
+  completeReading(id) {
+    const { progress } = get();
+    if (progress.readingCompleted?.[id]) return false;
+    set((state) => {
+      const p = { ...state.progress };
+      if (!p.readingCompleted) p.readingCompleted = {};
+      p.readingCompleted = { ...p.readingCompleted, [id]: true };
+      saveToStorage("em_progress", p);
+      return { progress: p };
+    });
+    return true;
+  },
+
+  completeListening(id) {
+    const { progress } = get();
+    if (progress.listeningCompleted?.[id]) return false;
+    set((state) => {
+      const p = { ...state.progress };
+      if (!p.listeningCompleted) p.listeningCompleted = {};
+      p.listeningCompleted = { ...p.listeningCompleted, [id]: true };
       saveToStorage("em_progress", p);
       return { progress: p };
     });

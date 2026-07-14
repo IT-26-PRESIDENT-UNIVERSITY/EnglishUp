@@ -5,7 +5,7 @@ import { fetchGrammar } from "../utils/api";
 import { pad } from "../utils/helpers";
 
 export default function Grammar() {
-  const { addXP, incrementGrammar, progress } = useStore();
+  const { addXP, completeGrammar, progress } = useStore();
   const [searchParams, setSearchParams] = useSearchParams();
   const [grammarLessons, setGrammarLessons] = useState([]);
   const [activeLesson, setActiveLesson] = useState(null);
@@ -48,15 +48,15 @@ export default function Grammar() {
   }
 
   function submitAnswers() {
+    if (showResult) return;
     let correct = 0;
     activeLesson.practice.forEach((p, i) => {
       if (answers[i] === p.answer) correct++;
     });
 
     if (correct === activeLesson.practice.length) {
-      if (!progress.grammarCompleted?.[activeLesson.id]) {
+      if (completeGrammar(activeLesson.id)) {
         addXP(20, `Grammar: ${activeLesson.title}`);
-        incrementGrammar(activeLesson.id);
       }
     }
     setShowResult(true);
@@ -71,6 +71,7 @@ export default function Grammar() {
   }
 
   if (activeLesson) {
+    const isCompleted = progress.grammarCompleted?.[activeLesson.id];
     const isPerfect = showResult && Object.keys(answers).filter(i => answers[i] === activeLesson.practice[i].answer).length === activeLesson.practice.length;
 
     return (
@@ -84,7 +85,14 @@ export default function Grammar() {
               &#8592;
             </button>
             <div>
-              <h1 className="text-[1.4rem] font-extrabold text-gray-900 dark:text-gray-100 m-0">{activeLesson.title}</h1>
+              <h1 className="text-[1.4rem] font-extrabold text-gray-900 dark:text-gray-100 m-0 flex items-center gap-2">
+                {activeLesson.title}
+                {isCompleted && (
+                  <span className="text-[0.7rem] uppercase tracking-[1.5px] font-bold text-green-700 bg-green-100 px-2 py-0.5 rounded-full border border-green-200">
+                    Mode Review
+                  </span>
+                )}
+              </h1>
               <p className="text-[0.8rem] text-gray-500 dark:text-gray-400 m-0">{activeLesson.subtitle}</p>
             </div>
           </header>
@@ -122,10 +130,10 @@ export default function Grammar() {
                   <div className="flex flex-col gap-2.5">
                     {p.options.map((opt) => {
                       let btnCls = "text-left px-4 py-3 rounded-xl border text-[0.9rem] transition-all font-medium cursor-pointer";
-                      if (showResult) {
+                      if (showResult || isCompleted) {
                         if (opt === p.answer) {
                           btnCls += " bg-green-50 border-green-500 text-green-700";
-                        } else if (opt === chosen) {
+                        } else if (opt === chosen && !isCompleted) {
                           btnCls += " bg-red-50 border-red-400 text-red-700";
                         } else {
                           btnCls += " bg-gray-50 dark:bg-slate-900/50 border-gray-200 dark:border-slate-700 text-gray-400 cursor-not-allowed";
@@ -141,8 +149,8 @@ export default function Grammar() {
                       return (
                         <button
                           key={opt}
-                          onClick={() => !showResult && handleAnswer(i, opt)}
-                          disabled={showResult}
+                          onClick={() => !showResult && !isCompleted && handleAnswer(i, opt)}
+                          disabled={showResult || isCompleted}
                           className={btnCls}
                         >
                           {opt}
@@ -155,7 +163,7 @@ export default function Grammar() {
             })}
           </div>
 
-          {!showResult ? (
+          {!showResult && !isCompleted ? (
             <button 
               onClick={submitAnswers}
               disabled={Object.keys(answers).length !== activeLesson.practice.length}
@@ -163,7 +171,7 @@ export default function Grammar() {
             >
               Cek Jawaban
             </button>
-          ) : (
+          ) : showResult ? (
             <div className={`p-5 rounded-2xl border ${isPerfect ? 'bg-green-50 border-green-200' : 'bg-yellow-50 border-yellow-200'} text-center`}>
               <h3 className={`text-[1.2rem] font-extrabold mb-2 m-0 ${isPerfect ? 'text-green-700' : 'text-yellow-700'}`}>
                 {isPerfect ? "Sempurna! +20 XP" : "Masih ada yang salah, coba lagi!"}
@@ -171,14 +179,25 @@ export default function Grammar() {
               <p className={`text-[0.9rem] mb-5 m-0 ${isPerfect ? 'text-green-600' : 'text-yellow-600'}`}>
                 {isPerfect ? "Kamu telah menguasai materi ini." : "Perhatikan jawaban yang benar di atas."}
               </p>
-              <button 
-                onClick={() => { setShowResult(false); setAnswers({}); }}
-                className={`px-6 py-2.5 rounded-full font-bold text-[0.85rem] cursor-pointer transition-colors border-none ${
-                  isPerfect ? 'bg-green-600 text-white hover:bg-green-700' : 'bg-yellow-500 text-white hover:bg-yellow-600'
-                }`}
-              >
-                {isPerfect ? "Ulangi Latihan" : "Coba Lagi"}
-              </button>
+              {isPerfect ? (
+                <button 
+                  onClick={() => setActiveLesson(null)}
+                  className="px-6 py-2.5 rounded-full font-bold text-[0.85rem] cursor-pointer transition-colors border-none bg-green-600 text-white hover:bg-green-700"
+                >
+                  &#10004; Accomplished (Kembali)
+                </button>
+              ) : (
+                <button 
+                  onClick={() => { setShowResult(false); setAnswers({}); }}
+                  className="px-6 py-2.5 rounded-full font-bold text-[0.85rem] cursor-pointer transition-colors border-none bg-yellow-500 text-white hover:bg-yellow-600"
+                >
+                  Coba Lagi
+                </button>
+              )}
+            </div>
+          ) : (
+            <div className="bg-gray-100 dark:bg-slate-800 border border-gray-300 dark:border-slate-600 p-5 rounded-2xl text-center text-gray-500 dark:text-gray-400 font-bold">
+              Materi Sudah Diselesaikan (Accomplished)
             </div>
           )}
         </div>
@@ -201,14 +220,20 @@ export default function Grammar() {
               <button
                 key={l.id}
                 onClick={() => handleSelectLesson(l)}
-                className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-[16px] p-5 text-left cursor-pointer transition-all hover:-translate-y-1 hover:border-gray-300 dark:border-slate-600 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4 group"
+                className={`border border-gray-200 dark:border-slate-700 rounded-[16px] p-5 text-left transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${
+                  isCompleted
+                    ? "bg-green-50/50 dark:bg-green-900/10"
+                    : "bg-white dark:bg-slate-800 cursor-pointer hover:-translate-y-1 hover:border-gray-300 dark:border-slate-600 shadow-sm group"
+                }`}
               >
                 <div>
                   <div className="flex items-center gap-3 mb-1.5">
                     <span className="text-[0.7rem] font-mono font-bold bg-gray-100 dark:bg-slate-700 text-gray-500 dark:text-gray-400 px-2 py-0.5 rounded">
                       #{pad(i + 1)}
                     </span>
-                    <h3 className="text-[1.1rem] font-bold text-gray-900 dark:text-gray-100 m-0 group-hover:text-rose-700 dark:text-rose-400 transition-colors">
+                    <h3 className={`text-[1.1rem] font-bold m-0 transition-colors ${
+                      isCompleted ? "text-green-800 dark:text-green-500" : "text-gray-900 dark:text-gray-100 group-hover:text-rose-700 dark:text-rose-400"
+                    }`}>
                       {l.title}
                     </h3>
                   </div>
@@ -216,14 +241,15 @@ export default function Grammar() {
                 </div>
                 
                 <div className="shrink-0 flex items-center gap-3">
-                  {isCompleted && (
-                    <span className="bg-green-100 text-green-700 px-2.5 py-1 rounded-md text-[0.7rem] font-bold uppercase tracking-[1px]">
-                      Selesai
+                  {isCompleted ? (
+                    <span className="bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-3 py-1.5 rounded-full text-[0.75rem] font-bold uppercase tracking-[1px] shadow-sm">
+                      ✨ Accomplished
+                    </span>
+                  ) : (
+                    <span className="text-gray-400 group-hover:text-rose-700 dark:text-rose-400 transition-colors text-[1.2rem]">
+                      &#8594;
                     </span>
                   )}
-                  <span className="text-gray-400 group-hover:text-rose-700 dark:text-rose-400 transition-colors text-[1.2rem]">
-                    &#8594;
-                  </span>
                 </div>
               </button>
             );

@@ -11,37 +11,11 @@ import Quiz from "./pages/Quiz";
 import StudyPlan from "./pages/StudyPlan";
 import Reading from "./pages/Reading";
 import Writing from "./pages/Writing";
-import Auth from "./pages/Auth";
 import Footer from "./components/Footer";
 import { useStore } from "./store/useStore";
-import { supabase } from "./utils/supabase";
 
 export default function App() {
-  const { theme, user, setUser } = useStore();
-
-  useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-      if (session?.user?.user_metadata?.progress) {
-        useStore.setState({ progress: session.user.user_metadata.progress });
-      } else {
-        useStore.getState().resetProgress();
-      }
-    });
-
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-      if (session?.user?.user_metadata?.progress) {
-        useStore.setState({ progress: session.user.user_metadata.progress });
-      } else {
-        useStore.getState().resetProgress();
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
+  const { theme } = useStore();
 
   useEffect(() => {
     if (theme === "dark") {
@@ -50,10 +24,6 @@ export default function App() {
       document.documentElement.classList.remove("dark");
     }
   }, [theme]);
-
-  if (!user) {
-    return <Auth />;
-  }
 
   return (
     <BrowserRouter>
