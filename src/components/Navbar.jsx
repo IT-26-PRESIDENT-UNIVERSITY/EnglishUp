@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { NavLink } from "react-router-dom";
 import { useStore } from "../store/useStore";
 
@@ -17,6 +17,45 @@ const links = [
 export default function Navbar() {
   const { progress, theme, toggleTheme } = useStore();
   const [menuOpen, setMenuOpen] = useState(false);
+
+  // PWA Install states
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
+  const [showInstallBtn, setShowInstallBtn] = useState(true);
+  const [showInstallModal, setShowInstallModal] = useState(false);
+  const [isIOS, setIsIOS] = useState(false);
+  const [isStandalone, setIsStandalone] = useState(false);
+
+  useEffect(() => {
+    const standalone = window.matchMedia('(display-mode: standalone)').matches || (window.navigator).standalone === true;
+    setIsStandalone(standalone);
+    if (standalone) {
+      setShowInstallBtn(false);
+      return;
+    }
+
+    const ios = /iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase());
+    setIsIOS(ios);
+
+    const handleBeforeInstallPrompt = (e) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+      setShowInstallBtn(true);
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+  }, []);
+
+  const handleInstallClick = async () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === 'accepted') setShowInstallBtn(false);
+      setDeferredPrompt(null);
+    } else {
+      setShowInstallModal(true);
+    }
+  };
 
   return (
     <>
@@ -48,15 +87,28 @@ export default function Navbar() {
             ))}
           </div>
 
-          {/* Right side: streak + theme toggle + hamburger */}
+          {/* Right side: install app + streak + theme toggle + hamburger */}
           <div className="flex items-center gap-2 ml-auto shrink-0">
+            {/* Install PWA Button */}
+            {!isStandalone && showInstallBtn && (
+              <button
+                onClick={handleInstallClick}
+                className="bg-gradient-to-r from-rose-600 to-rose-700 hover:from-rose-700 hover:to-rose-800 text-white px-3.5 py-1.5 rounded-full text-[0.78rem] font-extrabold shadow-sm transition-all flex items-center gap-1.5 cursor-pointer border border-rose-500/30 shrink-0"
+                title="Install Aplikasi EnglishUp"
+              >
+                <span>📱</span>
+                <span className="hidden sm:inline">Install App</span>
+                <span className="sm:hidden">Install</span>
+              </button>
+            )}
+
             {/* Streak badge */}
             <div className="flex items-center gap-1.5 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700/50 px-3 py-1.5 rounded-full">
               <span className="text-yellow-600 dark:text-yellow-500 text-[0.9rem]">&#9733;</span>
               <span className="font-extrabold text-[0.95rem] text-yellow-600 dark:text-yellow-500 font-mono">
                 {progress.streak}
               </span>
-              <span className="text-[0.7rem] text-gray-500 dark:text-gray-400">streak</span>
+              <span className="text-[0.7rem] text-gray-500 dark:text-gray-400 hidden sm:inline">streak</span>
             </div>
 
             {/* Theme toggle */}
@@ -112,6 +164,75 @@ export default function Navbar() {
           </div>
         )}
       </nav>
+
+      {/* PWA Install Modal */}
+      {showInstallModal && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-slate-800 p-6 sm:p-8 rounded-3xl shadow-2xl max-w-md w-full relative border border-gray-100 dark:border-slate-700">
+            <button 
+              onClick={() => setShowInstallModal(false)}
+              className="absolute top-4 right-4 w-9 h-9 bg-gray-100 dark:bg-slate-700 text-gray-500 dark:text-gray-300 rounded-full flex items-center justify-center font-bold text-sm hover:bg-gray-200"
+            >
+              ✕
+            </button>
+
+            <div className="flex items-center gap-3.5 mb-4">
+              <div className="w-12 h-12 rounded-2xl bg-rose-700 text-white flex items-center justify-center text-xl font-bold shadow-md shrink-0">
+                📲
+              </div>
+              <div>
+                <h3 className="text-lg font-extrabold text-gray-900 dark:text-gray-100 leading-tight">Install EnglishUp App</h3>
+                <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">Akses belajar bahasa Inggris langsung dari HP-mu!</p>
+              </div>
+            </div>
+
+            {isIOS ? (
+              <div className="space-y-3 my-4">
+                <div className="p-3.5 bg-rose-50/70 dark:bg-rose-900/20 rounded-2xl border border-rose-100 dark:border-rose-900/30 flex items-start gap-3">
+                  <span className="w-6 h-6 rounded-full bg-rose-700 text-white text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">1</span>
+                  <p className="text-xs text-gray-700 dark:text-gray-300 font-semibold leading-relaxed">
+                    Ketuk tombol <span className="inline-flex items-center gap-1 bg-white dark:bg-slate-700 px-2 py-0.5 rounded border border-gray-200 dark:border-slate-600 font-bold">Share / Bagikan 📤</span> di Safari.
+                  </p>
+                </div>
+                <div className="p-3.5 bg-rose-50/70 dark:bg-rose-900/20 rounded-2xl border border-rose-100 dark:border-rose-900/30 flex items-start gap-3">
+                  <span className="w-6 h-6 rounded-full bg-rose-700 text-white text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">2</span>
+                  <p className="text-xs text-gray-700 dark:text-gray-300 font-semibold leading-relaxed">
+                    Pilih <span className="inline-flex items-center gap-1 bg-white dark:bg-slate-700 px-2 py-0.5 rounded border border-gray-200 dark:border-slate-600 font-bold">Tambahkan ke Layar Utama (Add to Home Screen) 📲</span>.
+                  </p>
+                </div>
+                <div className="p-3.5 bg-rose-50/70 dark:bg-rose-900/20 rounded-2xl border border-rose-100 dark:border-rose-900/30 flex items-start gap-3">
+                  <span className="w-6 h-6 rounded-full bg-rose-700 text-white text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">3</span>
+                  <p className="text-xs text-gray-700 dark:text-gray-300 font-semibold leading-relaxed">
+                    Ketuk <span className="font-extrabold text-rose-700 dark:text-rose-400">Tambah (Add)</span> di kanan atas.
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-3 my-4">
+                <div className="p-3.5 bg-rose-50/70 dark:bg-rose-900/20 rounded-2xl border border-rose-100 dark:border-rose-900/30 flex items-start gap-3">
+                  <span className="w-6 h-6 rounded-full bg-rose-700 text-white text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">1</span>
+                  <p className="text-xs text-gray-700 dark:text-gray-300 font-semibold leading-relaxed">
+                    Ketuk menu titik tiga <span className="font-extrabold text-rose-700 dark:text-rose-400">⋮</span> di kanan atas browser (Chrome / Edge).
+                  </p>
+                </div>
+                <div className="p-3.5 bg-rose-50/70 dark:bg-rose-900/20 rounded-2xl border border-rose-100 dark:border-rose-900/30 flex items-start gap-3">
+                  <span className="w-6 h-6 rounded-full bg-rose-700 text-white text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">2</span>
+                  <p className="text-xs text-gray-700 dark:text-gray-300 font-semibold leading-relaxed">
+                    Pilih <span className="font-extrabold text-rose-700 dark:text-rose-400">Install aplikasi</span> / <span className="font-extrabold text-rose-700 dark:text-rose-400">Tambah ke Layar Utama</span>.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            <button
+              onClick={() => setShowInstallModal(false)}
+              className="mt-2 w-full py-3 rounded-xl bg-rose-700 text-white font-extrabold text-xs tracking-wider uppercase hover:bg-rose-800 transition-colors shadow-md cursor-pointer"
+            >
+              Saya Mengerti
+            </button>
+          </div>
+        </div>
+      )}
     </>
   );
 }
