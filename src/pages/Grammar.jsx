@@ -495,6 +495,6 @@ export default function Grammar() {
           })}
         </div>
       </div>
-    );
-  }
+    </div>
+  );
 }
