@@ -17,6 +17,12 @@ export function speak(text, rate = 0.85) {
   window.speechSynthesis.speak(utterance);
 }
 
+export function stopSpeech() {
+  if ("speechSynthesis" in window) {
+    window.speechSynthesis.cancel();
+  }
+}
+
 export function shuffle(array) {
   const arr = [...array];
   for (let i = arr.length - 1; i > 0; i--) {

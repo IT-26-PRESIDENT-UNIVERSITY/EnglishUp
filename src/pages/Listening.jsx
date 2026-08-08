@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useStore } from "../store/useStore";
 import { fetchListening } from "../utils/api";
-import { speak, cleanAIPrompt } from "../utils/helpers";
+import { speak, stopSpeech, cleanAIPrompt } from "../utils/helpers";
 import { generateDynamicText } from "../utils/ai";
 
 export default function Listening() {
@@ -45,6 +45,10 @@ export default function Listening() {
       }
     }
     loadData();
+
+    return () => {
+      stopSpeech();
+    };
   }, []);
 
   async function startListening(t) {
@@ -110,7 +114,7 @@ export default function Listening() {
         <div className="max-w-[800px] mx-auto px-4 sm:px-6 py-8 pb-16">
           <header className="mb-6 pb-4 border-b border-gray-200 dark:border-slate-700 flex items-center gap-4">
             <button 
-              onClick={() => { setActiveTopic(null); setAnswers({}); setScore(null); setPhase("list"); }}
+              onClick={() => { stopSpeech(); setActiveTopic(null); setAnswers({}); setScore(null); setPlayingId(null); }}
               className="bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 text-gray-600 dark:text-gray-400 w-10 h-10 rounded-full flex items-center justify-center cursor-pointer transition-colors hover:text-gray-900 dark:text-gray-100 hover:border-gray-300 dark:border-slate-600"
             >
               &#8592;

@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Toast from "./components/Toast";
 import Dashboard from "./pages/Dashboard";
@@ -13,6 +13,17 @@ import Reading from "./pages/Reading";
 import Writing from "./pages/Writing";
 import Footer from "./components/Footer";
 import { useStore } from "./store/useStore";
+import { stopSpeech } from "./utils/helpers";
+
+function RouteWatcher() {
+  const location = useLocation();
+
+  useEffect(() => {
+    stopSpeech();
+  }, [location.pathname]);
+
+  return null;
+}
 
 export default function App() {
   const { theme } = useStore();
@@ -27,6 +38,7 @@ export default function App() {
 
   return (
     <BrowserRouter>
+      <RouteWatcher />
       <div className="flex flex-col min-h-screen w-full">
         <Navbar />
         <main className="flex-1">

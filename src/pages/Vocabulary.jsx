@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useStore } from "../store/useStore";
 import { fetchVocabulary } from "../utils/api";
-import { speak, translateText } from "../utils/helpers";
+import { speak, stopSpeech, translateText } from "../utils/helpers";
 
 export default function Vocabulary() {
   const { addXP, incrementVocab } = useStore();
@@ -44,7 +44,10 @@ export default function Vocabulary() {
       loadVocab();
     }, search ? 500 : 0);
 
-    return () => clearTimeout(delayDebounce);
+    return () => {
+      clearTimeout(delayDebounce);
+      stopSpeech();
+    };
   }, [page, search, view]);
 
   const word = words[idx];

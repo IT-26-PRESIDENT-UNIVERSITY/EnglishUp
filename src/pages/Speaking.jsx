@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useStore } from "../store/useStore";
 import { fetchSpeaking } from "../utils/api";
-import { speak, calcSimilarity } from "../utils/helpers";
+import { speak, stopSpeech, calcSimilarity } from "../utils/helpers";
 
 export default function Speaking() {
   const { addXP } = useStore();
@@ -63,6 +63,13 @@ export default function Speaking() {
     } else {
       useStore.getState().setToast("Browser ini tidak mendukung Speech Recognition.");
     }
+
+    return () => {
+      stopSpeech();
+      if (recognitionRef.current) {
+        try { recognitionRef.current.stop(); } catch (e) {}
+      }
+    };
   }, []);
 
   function handleSelectTopic(level) {
@@ -130,7 +137,14 @@ export default function Speaking() {
         <div className="max-w-[700px] mx-auto px-4 sm:px-6 py-8 pb-16">
           <header className="mb-6 pb-4 border-b border-gray-200 dark:border-slate-700 flex items-center gap-4">
             <button 
-              onClick={() => setTopic(null)}
+              onClick={() => {
+                stopSpeech();
+                if (isRecording && recognitionRef.current) {
+                  try { recognitionRef.current.stop(); } catch (e) {}
+                }
+                setIsRecording(false);
+                setTopic(null);
+              }}
               className="bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 text-gray-600 dark:text-gray-400 w-10 h-10 rounded-full flex items-center justify-center cursor-pointer transition-colors hover:text-gray-900 dark:text-gray-100 hover:border-gray-300 dark:border-slate-600"
             >
               &#8592;
