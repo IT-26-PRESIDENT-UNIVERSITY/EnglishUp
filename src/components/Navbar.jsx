@@ -64,9 +64,7 @@ export default function Navbar() {
 
           {/* Logo */}
           <div className="flex items-center gap-2 shrink-0">
-            <span className="text-[1.1rem] font-extrabold text-gray-900 dark:text-gray-100">
-              EnglishUp
-            </span>
+            <img src="/logo.png" alt="EnglishUp Logo" className="h-7 sm:h-8 w-auto object-contain dark:bg-white/90 dark:p-1 dark:rounded-md" />
           </div>
 
           {/* Desktop nav links */}
