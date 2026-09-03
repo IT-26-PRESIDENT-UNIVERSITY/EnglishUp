@@ -72,7 +72,6 @@ export default function Listening() {
     setActiveTopic({ ...t, script: transcriptContent });
     setAnswers({});
     setScore(null);
-    setPhase("listening");
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 

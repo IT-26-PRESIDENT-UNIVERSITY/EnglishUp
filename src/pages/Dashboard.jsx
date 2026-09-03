@@ -78,9 +78,12 @@ export default function Dashboard() {
   const quickLinks = [
     { path: "/vocabulary", title: "Vocabulary Flashcard", desc: "Pelajari kata baru dengan spaced repetition" },
     { path: "/grammar", title: "Grammar Lessons", desc: "Kuasai struktur kalimat Bahasa Inggris" },
-    { path: "/listening", title: "Listening Practice", desc: "Latih pendengaran dengan kalimat nyata" },
+    { path: "/listening", title: "Listening Practice", desc: "Latih pendengaran dengan dialog audio nyata" },
     { path: "/speaking", title: "Speaking Practice", desc: "Latih pengucapan dengan speech recognition" },
-    { path: "/quiz", title: "Daily Quiz", desc: "Uji kemampuanmu dan kumpulkan XP" },
+    { path: "/reading", title: "Reading Comprehension", desc: "Asah pemahaman artikel dan teks TOEFL/IELTS" },
+    { path: "/writing", title: "Writing Evaluation", desc: "Latihan esai dan evaluasi standar skor IELTS oleh AI" },
+    { path: "/quiz", title: "Daily Quiz", desc: "Uji kemampuan harianmu dan kumpulkan XP" },
+    { path: "/plan", title: "Rencana Belajar", desc: "Peta jalan 63 hari menuju kelancaran Bahasa Inggris" },
   ];
 
   const tips = [
